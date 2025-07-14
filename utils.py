@@ -1,3 +1,14 @@
+import re
+
+PHONE_REGEX = r"\+?\d{7,15}"
+EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
+
+def is_valid_phone(value):
+    return re.fullmatch(PHONE_REGEX, value)
+
+def is_valid_email(value):
+    return re.fullmatch(EMAIL_REGEX, value)
+
 def parse_input(user_input):
     pass
 
