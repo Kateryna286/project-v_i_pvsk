@@ -1,8 +1,8 @@
 from collections import UserDict
-from datetime import datetime
+from datetime import datetime, date  # додано date
 
 class Field:
-    def __init__ (self, value=None):
+    def __init__(self, value=None):
         self.value = value
 
     def __str__(self):
@@ -17,7 +17,7 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value):
         clean_value = ''.join(filter(str.isdigit, value))
-        if len(clean_value) != 10: # Є питання щодо формату телефонного номера, але припускаємо, що це 10 цифр без коду країни.
+        if len(clean_value) != 10:
             raise ValueError("Phone number must contain exactly 10 digits.")
         super().__init__(clean_value)
 
@@ -34,12 +34,27 @@ class Email(Field):
         if " " in email or "\t" in email:
             raise ValueError("Email cannot contain spaces or tabs.")
         super().__init__(email)
-    
+
 class Birthday(Field):
-    pass
+    def __init__(self, value):
+        if isinstance(value, str):
+            try:
+                birthday_date = datetime.strptime(value, "%d.%m.%Y").date()
+            except ValueError:
+                raise ValueError("Birthday must be in the format DD.MM.YYYY")
+        elif isinstance(value, date):
+            birthday_date = value
+        else:
+            raise TypeError("Birthday must be a string in format DD.MM.YYYY or a datetime.date object.")
+        if birthday_date > date.today():
+            raise ValueError("Birthday cannot be in the future.")
+        super().__init__(birthday_date)
 
 class Address(Field):
-    pass
+    def __init__(self, value):
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError("Address cannot be empty.")
+        super().__init__(value.strip())
 
 class Record:
     pass
