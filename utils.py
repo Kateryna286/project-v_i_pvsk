@@ -10,7 +10,12 @@ def is_valid_email(value):
     return re.fullmatch(EMAIL_REGEX, value)
 
 def parse_input(user_input):
-    pass
+    """Parses the user's input into a command and its arguments."""
+      
+    parts = user_input.strip().lower().split()
+    if not parts:
+        return "", []
+    return parts[0], parts[1:]
 
 
 def input_error(func):
