@@ -2,10 +2,17 @@ from collections import UserDict
 from datetime import datetime
 
 class Field:
-    pass
+    def __init__ (self, value=None):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value) 
 
 class Name(Field):
-    pass
+    def __init__(self, value):
+        if not value or not value.strip():
+            raise ValueError("Name cannot be empty.")
+        super().__init__(value.strip())
 
 class Phone(Field):
     pass
