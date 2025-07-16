@@ -5,7 +5,9 @@ PHONE_REGEX = r"^\d{6,9}$"
 EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
 def normalize_phone(value: str) -> str:
-    """Keeps + only at the beginning and removes all other non-digit characters"""
+    value = value.strip()
+    if value.startswith('+'):
+        return '+' + ''.join(filter(str.isdigit, value[1:]))
     return ''.join(filter(str.isdigit, value))
 
 def is_valid_phone(value: str) -> bool:
