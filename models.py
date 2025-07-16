@@ -14,32 +14,21 @@ class Field:
 # ----------- Contact Fields ---------------
 class Name(Field):
     def __init__(self, value):
-        if not value or not value.strip():
+        if not isinstance(value, str) or not value.strip():
             raise ValueError("Name cannot be empty.")
         super().__init__(value.strip())
 
 class Phone(Field):
     def __init__(self, value):
         clean_value = ''.join(filter(str.isdigit, value))
-        if len(clean_value) != 10:
-            raise ValueError("Phone number must contain exactly 10 digits.")
+        if not is_valid_phone(clean_value):
+            raise ValueError("Phone number must be valid (10 digits).")
         super().__init__(clean_value)
-
-    @staticmethod
-    def validate(value):
-        return len(value) == 10 and value.isdigit()
 
 class Email(Field):
     def __init__(self, value):
         email = value.strip()
-        if (
-            not email
-            or email.count("@") != 1
-            or email.startswith("@")
-            or email.endswith("@")
-            or '.' not in email.split("@")[1]
-            or " " in email
-        ):
+        if not is_valid_email(email):
             raise ValueError("Invalid email format.")
         super().__init__(email)
 
@@ -65,30 +54,25 @@ class Address(Field):
         super().__init__(value.strip())
 
 # ----------- Contact Record ----------------
+from datetime import datetime, date
+
 class Record:
-    def __init__(self, name, phone=None, email=None, birthday=None, address=None):
+    def __init__(self, name):
         self.name = Name(name)
         self.phones = []
-        self.emails = []
-        self.birthday = Birthday(birthday) if birthday else None
-        self.address = Address(address) if address else None
-
-        if phone:
-            self.add_phone(phone)
-        if email:
-            self.add_email(email)
+        self.birthday = None
+        self.email = None
+        self.address = None
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
 
-    def add_email(self, email):
-        self.emails.append(Email(email))
-
-    def set_birthday(self, birthday):
-        self.birthday = Birthday(birthday)
-
-    def set_address(self, address):
-        self.address = Address(address)
+    def edit_phone(self, old_phone, new_phone):
+        for i, p in enumerate(self.phones):
+            if p.value == old_phone:
+                self.phones[i] = Phone(new_phone)
+                return True
+        return False
 
     def remove_phone(self, phone):
         for p in self.phones:
@@ -97,37 +81,43 @@ class Record:
                 return True
         return False
 
-    def remove_email(self, email):
-        for e in self.emails:
-            if e.value == email:
-                self.emails.remove(e)
-                return True
-        return False
+    def set_email(self, email):
+        self.email = Email(email)
 
-    def edit_phone(self, old_phone, new_phone):
-        if not Phone.validate(new_phone):
-            raise ValueError("New phone number must be 10 digits.")
-        for i, p in enumerate(self.phones):
-            if p.value == old_phone:
-                self.phones[i] = Phone(new_phone)
-                return True
-        return False
+    def remove_email(self):
+        self.email = None
+
+    def set_birthday(self, birthday):
+        self.birthday = Birthday(birthday)
+
+    def set_address(self, address):
+        self.address = Address(address)
 
     def get_info(self):
         info = f"Name: {self.name.value}\n"
         if self.phones:
             info += "Phones: " + ", ".join(str(p) for p in self.phones) + "\n"
-        if self.emails:
-            info += "Emails: " + ", ".join(str(e) for e in self.emails) + "\n"
+        if self.email:
+            info += f"Email: {self.email.value}\n"
         if self.address:
             info += f"Address: {self.address.value}\n"
         if self.birthday:
             info += f"Birthday: {self.birthday.value.strftime('%d.%m.%Y')}\n"
         return info.strip()
 
+    def days_to_birthday(self):
+        if not self.birthday:
+            return None
+        today = date.today()
+        next_birthday = self.birthday.value.replace(year=today.year)
+        if next_birthday < today:
+            next_birthday = next_birthday.replace(year=today.year + 1)
+        return (next_birthday - today).days
+
     def __str__(self):
-        phones = ", ".join(p.value for p in self.phones) if self.phones else "no phones"
+        phones = ", ".join(p.value for p in self.phones) if self.phones else "No phones"
         return f"{self.name.value} | Phones: {phones}"
+
 
 # ----------- AddressBook -------------------
 class AddressBook(UserDict):
@@ -179,17 +169,6 @@ class AddressBook(UserDict):
                     })
         return upcoming
 
-    def save(self):
-        with open(self.filename, "wb") as f:
-            pickle.dump(self.data, f)
-
-    def load(self):
-        if os.path.exists(self.filename):
-            with open(self.filename, "rb") as f:
-                self.data = pickle.load(f)
-        else:
-            self.data = {}
-
 # ----------- Note & NotesBook ---------------
 class Note:
     def __init__(self, text):
@@ -205,35 +184,3 @@ class NotesBook(UserDict):
         super().__init__()
         self.filename = filename
         self.load()
-
-    def add_note(self, note_text):
-        note = Note(note_text)
-        self.data[len(self.data) + 1] = note
-        self.save()
-
-    def search(self, keyword):
-        return {k: v for k, v in self.data.items() if keyword.lower() in v.text.lower()}
-
-    def delete_note(self, note_id):
-        if note_id in self.data:
-            del self.data[note_id]
-            self.save()
-        else:
-            raise KeyError(f"No note with ID {note_id}")
-
-    def edit_note(self, note_id, new_text):
-        if note_id not in self.data:
-            raise KeyError(f"No note with ID {note_id}")
-        self.data[note_id] = Note(new_text)
-        self.save()
-
-    def save(self):
-        with open(self.filename, "wb") as f:
-            pickle.dump(self.data, f)
-
-    def load(self):
-        if os.path.exists(self.filename):
-            with open(self.filename, "rb") as f:
-                self.data = pickle.load(f)
-        else:
-            self.data = {}
