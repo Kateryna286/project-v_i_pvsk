@@ -129,3 +129,26 @@ def delete_note(args, notebook):
 @input_error
 def edit_note(args, notebook):
     pass
+
+
+def show_help():
+    return (
+        "Available commands:\n"
+        "  add — Add a new contact\n"
+        "  change — Change contact's phone number\n"
+        "  phone — Show phone numbers for contact\n"
+        "  all — Show all contacts\n"
+        "  add-birthday — Add birthday to contact\n"
+        "  show-birthday — Show contact's birthday\n"
+        "  birthdays — Show upcoming birthdays\n"
+        "  delete — Delete contact\n"
+        "  find  — Search contacts\n"
+        "  add-note — Add a note\n"
+        "  find-note — Find a note\n"
+        "  edit-note — Edit a note\n"
+        "  delete-note — Delete a note\n"
+        "  hello — Greeting\n"
+        "  help — Show this help message\n"
+        "  exit / close — Exit the assistant"
+    )
+
