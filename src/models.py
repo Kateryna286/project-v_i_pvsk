@@ -1,7 +1,6 @@
 from collections import UserDict
 from datetime import datetime, date, timedelta
 from utils import is_valid_phone, is_valid_email
-import pickle
 
 # ----------- Field Base Class -------------
 
@@ -151,10 +150,6 @@ class AddressBook(UserDict):
             del self.data[name]
         else:
             raise KeyError(f"No record found for name: {name}")
-    
-    def save(self, filename="addressbook.pkl"):
-        with open(filename, "wb") as file:
-            pickle.dump(self, file)
 
     def search(self, query):
         result = []
