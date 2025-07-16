@@ -1,6 +1,18 @@
 from utils import input_error, normalize_phone
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
+from formatters import format_contacts, format_notes
 
+@input_error
+def show_all(book):
+    if not book.values():
+        return "Address book is empty."
+    return format_contacts(book)
+
+@input_error
+def show_notes(notebook):
+    if not notebook.data:
+        return "No notes found."
+    return format_notes(notebook)
 
 @input_error
 def add_contact(args, book):
@@ -18,7 +30,6 @@ def add_contact(args, book):
         record.add_phone(phone)
     return message
 
-
 @input_error
 def change_contact(args, book):
     if len(args) != 3:
@@ -26,7 +37,6 @@ def change_contact(args, book):
     
     name, old, new = args
     record = book.get_record(name)
-    
     if not record:
         return "Contact not found."
 
@@ -37,20 +47,14 @@ def change_contact(args, book):
     record.edit_phone(old, new)
     return "The phone number has been updated."
 
-
 @input_error
 def show_phone(args, book):
     name = args[0]
     record = book.get_record(name)
     if record:
-        return f"Phone numbers for {name}: " + ', '.join(p.value for p in record.phones)
+        phones = ', '.join(p.value for p in record.phones)
+        return f"Phone numbers for {name}: {phones}"
     return "Contact not found."
-
-
-@input_error
-def show_all(book):
-    return "\n".join(str(record) for record in book.values()) or "Address book is empty."
-
 
 @input_error
 def add_birthday(args, book):
@@ -61,7 +65,6 @@ def add_birthday(args, book):
     record.set_birthday(date_str)
     return "Birthday added."
 
-
 @input_error
 def show_birthday(args, book):
     name = args[0]
@@ -70,10 +73,8 @@ def show_birthday(args, book):
         return "Contact not found."
     if not record.birthday:
         return "Birthday not set."
-
     birthday_str = record.birthday.value.strftime("%d.%m.%Y")
     return f"{name}'s birthday: {birthday_str}"
-
 
 @input_error
 def birthdays(book, days=7):
@@ -85,7 +86,6 @@ def birthdays(book, days=7):
         result += f"{user['name']} - {user['congratulation_date']}\n"
     return result.strip()
 
-
 @input_error
 def add_email(args, book):
     name, email = args
@@ -94,7 +94,6 @@ def add_email(args, book):
         return "Contact not found."
     record.add_email(email)
     return "Email added."
-
 
 @input_error
 def add_address(args, book):
@@ -106,7 +105,6 @@ def add_address(args, book):
     record.add_address(address)
     return "Address added."
 
-
 @input_error
 def delete_contact(args, book):
     name = args[0]
@@ -116,7 +114,6 @@ def delete_contact(args, book):
     except KeyError:
         return "Contact not found."
 
-
 @input_error
 def find_contact(args, book):
     keyword = args[0].lower()
@@ -125,8 +122,8 @@ def find_contact(args, book):
                any(keyword in p.value.lower() for p in record.phones)]
     if not matches:
         return "No matching contacts found."
-    return "\n".join(str(record) for record in matches)
-
+    # Форматуємо знайдені контакти в таблицю
+    return format_contacts({r.name: r for r in matches})
 
 @input_error
 def add_note(args, notebook):
@@ -137,7 +134,6 @@ def add_note(args, notebook):
     note = Note(text)
     notebook.add_note(title, note)
     return f"Note '{title}' added."
-
 
 @input_error
 def find_note(args, notebook):
@@ -153,7 +149,6 @@ def find_note(args, notebook):
         output.append(f"• {title}: {note}")
     return "\n".join(output)
 
-
 @input_error
 def delete_note(args, notebook):
     if not args:
@@ -161,7 +156,6 @@ def delete_note(args, notebook):
     title = " ".join(args)
     notebook.delete_note(title)
     return f"Note '{title}' deleted."
-
 
 @input_error
 def edit_note(args, notebook):
@@ -172,35 +166,24 @@ def edit_note(args, notebook):
     notebook.edit_note(title, new_text)
     return f"Note '{title}' updated."
 
-
-@input_error
-def show_notes(notebook):
-    if not notebook.data:
-        return "No notes found."
-    output = ["All notes:"]
-    for title, note in notebook.data.items():
-        output.append(f"• {title}: {note}")
-    return "\n".join(output)
-
-
 def show_help():
-    commands = [
-        ("add", "Add a new contact"),
-        ("change", "Change contact's phone number"),
-        ("phone", "Show phone numbers for contact"),
-        ("all", "Show all contacts"),
-        ("add-birthday", "Add birthday to contact"),
-        ("show-birthday", "Show contact's birthday"),
-        ("birthdays", "Show upcoming birthdays"),
-        ("delete", "Delete contact"),
-        ("find", "Search contacts"),
-        ("add-note", "Add a note"),
-        ("find-note", "Find a note"),
-        ("edit-note", "Edit a note"),
-        ("delete-note", "Delete a note"),
-        ("show-notes", "Show all notes"),
-        ("hello", "Greeting"),
-        ("help", "Show this help message"),
-        ("exit / close", "Exit the assistant"),
-    ]
-    return "Available commands:\n" + "\n".join(f"  {cmd:<15} — {desc}" for cmd, desc in sorted(commands))
+    return (
+        "\nAvailable commands:\n"
+        "add - Add a new contact\n"
+        "change - Change contact's phone number\n"
+        "phone - Show phone numbers for contact\n"
+        "all - Show all contacts\n"
+        "add-birthday - Add birthday to contact\n"
+        "show-birthday - Show contact's birthday\n"
+        "birthdays - Show upcoming birthdays\n"
+        "delete - Delete contact\n"
+        "find - Search contacts\n"
+        "add-note - Add a note\n"
+        "find-note - Find a note\n"
+        "edit-note - Edit a note\n"
+        "delete-note - Delete a note\n"
+        "show-notes - Show all notes\n"
+        "hello - Greeting\n"
+        "help - Show this help message\n"
+        "exit / close - Exit the assistant\n"
+    )

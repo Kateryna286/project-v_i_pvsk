@@ -2,56 +2,58 @@ from handlers import add_contact, change_contact, show_phone, show_all, add_birt
 from models import AddressBook, NoteBook
 from utils import parse_input
 from storage import save_data, load_data, save_notebook, load_notebook
+from colorama import Fore, Style, init
 
+init(autoreset=True)
 
 def main():
-    """Main loop for handling user commands."""
     book = load_data()
     notebook = load_notebook()
-    print("Welcome to your assistant bot!\nPlease write \"help\" to see the commands")
+    print(Fore.GREEN + "Welcome to your assistant bot!")
+    print(Fore.YELLOW + 'Please write "help" to see the commands\n')
 
     try:
         while True:
-            user_input = input(">>> ")
+            user_input = input(Fore.CYAN + ">>> " + Style.RESET_ALL)
             command, args = parse_input(user_input)
 
             if command in ("exit", "close"):
-                print("Goodbye!")
+                print(Fore.GREEN + "Goodbye!")
                 break
             elif command == "add":
-                print(add_contact(args, book))
-            elif command == "change":
-                print(change_contact(args, book))
-            elif command == "phone":
-                print(show_phone(args, book))
-            elif command == "all":
-                print(show_all(book))
+                print(Fore.GREEN + add_contact(args, book))
             elif command == "add-birthday":
-                print(add_birthday(args, book))
-            elif command == "show-birthday":
-                print(show_birthday(args, book))
-            elif command == "birthdays":
-                print(birthdays(book))
+                print(Fore.GREEN + add_birthday(args, book))
             elif command == "add-note":
-                print(add_note(args, notebook))
+                print(Fore.GREEN + add_note(args, notebook))
+            elif command == "all":
+                print(Fore.MAGENTA + show_all(book))
+            elif command == "birthdays":
+                print(Fore.MAGENTA + birthdays(book))
+            elif command == "change":
+                print(Fore.GREEN + change_contact(args, book))
+            elif command == "phone":
+                print(Fore.YELLOW + show_phone(args, book))
+            elif command == "show-birthday":
+                print(Fore.YELLOW + show_birthday(args, book))
             elif command == "find-note":
-                print(find_note(args, notebook))
+                print(Fore.MAGENTA + find_note(args, notebook))
             elif command == "del-note":
-                print(delete_note(args, notebook))
+                print(Fore.RED + delete_note(args, notebook))
             elif command == "del-contact":
-                print(delete_contact(args, book))
+                print(Fore.RED + delete_contact(args, book))
             elif command == "edit-note":
-                print(edit_note(args, notebook))
+                print(Fore.GREEN + edit_note(args, notebook))
             elif command == "show-notes":
-                print(show_notes(notebook))
+                print(Fore.MAGENTA + show_notes(notebook))
             elif command == "hello":
-                print("How can I help you?")
+                print(Fore.CYAN + "How can I help you?")
             elif command == "help":
-                print(show_help())
+                print(Fore.YELLOW + show_help())
             else:
-                print("Unknown command. Try again.")
+                print(Fore.RED + "Unknown command. Try again.")
     except KeyboardInterrupt:
-        print("\nInterrupted. Saving data and exiting.")
+        print(Fore.RED + "\nInterrupted. Saving data and exiting.")
     finally:
         save_data(book)
         save_notebook(notebook)
