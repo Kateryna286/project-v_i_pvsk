@@ -149,7 +149,6 @@ class AddressBook(UserDict):
     def remove_record(self, name):
         if name in self.data:
             del self.data[name]
-            self.save()
         else:
             raise KeyError(f"No record found for name: {name}")
     
