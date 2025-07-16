@@ -1,7 +1,9 @@
+import pickle
+import os
 from collections import UserDict
 from datetime import datetime, date, timedelta
 
-# ----------- Base Field Class -------------
+# ----------- Field Base Class -------------
 class Field:
     def __init__(self, value=None):
         self.value = value
@@ -9,7 +11,7 @@ class Field:
     def __str__(self):
         return str(self.value)
 
-# ----------- Contact Fields ----------------
+# ----------- Contact Fields ---------------
 class Name(Field):
     def __init__(self, value):
         if not value or not value.strip():
@@ -29,16 +31,16 @@ class Phone(Field):
 
 class Email(Field):
     def __init__(self, value):
-        if not isinstance(value, str) or not value.strip():
-            raise ValueError("Email cannot be empty.")
         email = value.strip()
-        if email.count("@") != 1 or email.startswith("@") or email.endswith("@"):
-            raise ValueError("Email must contain exactly one '@' and cannot start or end with '@'.")
-        local, domain = email.split("@")
-        if not local or not domain or '.' not in domain:
-            raise ValueError("Email must contain a valid domain.")
-        if " " in email or "\t" in email:
-            raise ValueError("Email cannot contain spaces or tabs.")
+        if (
+            not email
+            or email.count("@") != 1
+            or email.startswith("@")
+            or email.endswith("@")
+            or '.' not in email.split("@")[1]
+            or " " in email
+        ):
+            raise ValueError("Invalid email format.")
         super().__init__(email)
 
 class Birthday(Field):
@@ -47,22 +49,22 @@ class Birthday(Field):
             try:
                 birthday_date = datetime.strptime(value, "%d.%m.%Y").date()
             except ValueError:
-                raise ValueError("Birthday must be in the format DD.MM.YYYY")
+                raise ValueError("Birthday must be in format DD.MM.YYYY")
         elif isinstance(value, date):
             birthday_date = value
         else:
-            raise TypeError("Birthday must be a string in format DD.MM.YYYY or a datetime.date object.")
+            raise TypeError("Birthday must be a string or datetime.date")
         if birthday_date > date.today():
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday_date)
 
 class Address(Field):
     def __init__(self, value):
-        if not isinstance(value, str) or not value.strip():
+        if not value.strip():
             raise ValueError("Address cannot be empty.")
         super().__init__(value.strip())
 
-# ----------- Record ------------------------
+# ----------- Contact Record ----------------
 class Record:
     def __init__(self, name, phone=None, email=None, birthday=None, address=None):
         self.name = Name(name)
@@ -129,10 +131,16 @@ class Record:
 
 # ----------- AddressBook -------------------
 class AddressBook(UserDict):
+    def __init__(self, filename="address_book.pkl"):
+        super().__init__()
+        self.filename = filename
+        self.load()
+
     def add_record(self, record):
         if not isinstance(record, Record):
             raise TypeError("Only Record instances can be added.")
         self.data[record.name.value] = record
+        self.save()
 
     def get_record(self, name):
         return self.data.get(name)
@@ -140,16 +148,19 @@ class AddressBook(UserDict):
     def remove_record(self, name):
         if name in self.data:
             del self.data[name]
+            self.save()
         else:
             raise KeyError(f"No record found for name: {name}")
 
     def search(self, query):
         result = []
         for record in self.data.values():
-            if (query.lower() in record.name.value.lower() or
-                any(query in p.value for p in record.phones) or
-                any(query in e.value for e in record.emails) or
-                (record.address and query.lower() in record.address.value.lower())):
+            if (
+                query.lower() in record.name.value.lower()
+                or any(query in p.value for p in record.phones)
+                or any(query in e.value for e in record.emails)
+                or (record.address and query.lower() in record.address.value.lower())
+            ):
                 result.append(record)
         return result
 
@@ -161,18 +172,28 @@ class AddressBook(UserDict):
                 bday = record.birthday.value.replace(year=today.year)
                 if bday < today:
                     bday = bday.replace(year=today.year + 1)
-                delta = (bday - today).days
-                if 0 <= delta <= days:
+                if 0 <= (bday - today).days <= days:
                     upcoming.append({
                         "name": record.name.value,
                         "birthday": bday.strftime("%d.%m.%Y")
                     })
         return upcoming
 
-# ----------- Notes -------------------------
+    def save(self):
+        with open(self.filename, "wb") as f:
+            pickle.dump(self.data, f)
+
+    def load(self):
+        if os.path.exists(self.filename):
+            with open(self.filename, "rb") as f:
+                self.data = pickle.load(f)
+        else:
+            self.data = {}
+
+# ----------- Note & NotesBook ---------------
 class Note:
     def __init__(self, text):
-        if not isinstance(text, str) or not text.strip():
+        if not text.strip():
             raise ValueError("Note cannot be empty.")
         self.text = text.strip()
 
@@ -180,9 +201,15 @@ class Note:
         return self.text
 
 class NotesBook(UserDict):
+    def __init__(self, filename="notes_book.pkl"):
+        super().__init__()
+        self.filename = filename
+        self.load()
+
     def add_note(self, note_text):
         note = Note(note_text)
         self.data[len(self.data) + 1] = note
+        self.save()
 
     def search(self, keyword):
         return {k: v for k, v in self.data.items() if keyword.lower() in v.text.lower()}
@@ -190,6 +217,7 @@ class NotesBook(UserDict):
     def delete_note(self, note_id):
         if note_id in self.data:
             del self.data[note_id]
+            self.save()
         else:
             raise KeyError(f"No note with ID {note_id}")
 
@@ -197,3 +225,15 @@ class NotesBook(UserDict):
         if note_id not in self.data:
             raise KeyError(f"No note with ID {note_id}")
         self.data[note_id] = Note(new_text)
+        self.save()
+
+    def save(self):
+        with open(self.filename, "wb") as f:
+            pickle.dump(self.data, f)
+
+    def load(self):
+        if os.path.exists(self.filename):
+            with open(self.filename, "rb") as f:
+                self.data = pickle.load(f)
+        else:
+            self.data = {}
