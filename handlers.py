@@ -71,11 +71,11 @@ def show_birthday(args, book):
 
 
 @input_error
-def birthdays(book):
-    upcoming = book.get_upcoming_birthdays()
+def birthdays(book, days=7):
+    upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
-        return "No upcoming birthdays this week."
-    result = "Upcoming birthdays:\n"
+        return f"No upcoming birthdays in the next {days} day(s)."
+    result = f"Upcoming birthdays in the next {days} day(s):\n"
     for user in upcoming:
         result += f"{user['name']} - {user['congratulation_date']}\n"
     return result.strip()
