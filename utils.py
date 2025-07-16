@@ -1,13 +1,21 @@
 import re
 
-PHONE_REGEX = r"\+?\d{7,15}"
-EMAIL_REGEX = r"[^@]+@[^@]+\.[^@]+"
+# PHONE_REGEX = r"^\+\d{1,3}\d{6,9}$"
+PHONE_REGEX = r"^\d{6,9}$"
+EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
-def is_valid_phone(value):
-    return re.fullmatch(PHONE_REGEX, value)
+def normalize_phone(value: str) -> str:
+    """Keeps + only at the beginning and removes all other non-digit characters"""
+    return ''.join(filter(str.isdigit, value))
+
+def is_valid_phone(value: str) -> bool:
+    """Validates normalized phone number format"""
+    normalized = normalize_phone(value)
+    return re.fullmatch(PHONE_REGEX, normalized)
 
 def is_valid_email(value):
     return re.fullmatch(EMAIL_REGEX, value)
+
 
 def parse_input(user_input):
     """Parses the user's input into a command and its arguments."""

@@ -1,13 +1,14 @@
-from handlers import add_contact, change_contact, show_phone, show_all, add_birthday, show_birthday, birthdays, add_email, add_address, delete_contact, find_contact, add_note, find_note, delete_note, edit_note, show_help
+from handlers import add_contact, change_contact, show_phone, show_all, add_birthday, show_birthday, birthdays, add_email, add_address, delete_contact, find_contact, add_note, find_note, delete_note, edit_note, show_notes, show_help
 from models import AddressBook, NoteBook
 from utils import parse_input
-from storage import save_data, load_data
+from storage import save_data, load_data, save_notebook, load_notebook
 
 
 def main():
     """Main loop for handling user commands."""
     
     book = load_data()
+    notebook = load_notebook()
     print("Welcome to your assistant bot!")
 
     while True:
@@ -31,6 +32,16 @@ def main():
             print(show_birthday(args, book))
         elif command == "birthdays":
             print(birthdays(book))
+        elif command == "add-note":
+            print(add_note(args, notebook))
+        elif command == "find-note":
+            print(find_note(args, notebook))
+        elif command == "del-note":
+            print(delete_note(args, notebook))
+        elif command == "edit-note":
+            print(edit_note(args, notebook))
+        elif command == "show-notes":
+            print(show_notes(notebook))
         elif command == "hello":
             print("How can I help you?")
         elif command == "help":
@@ -39,6 +50,7 @@ def main():
             print("Unknown command. Try again.")
 
     save_data(book)
+    save_notebook(notebook)
 
 
 if __name__ == "__main__":
