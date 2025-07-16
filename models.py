@@ -1,9 +1,9 @@
-import pickle
-import os
 from collections import UserDict
 from datetime import datetime, date, timedelta
+from utils import is_valid_phone, is_valid_email
 
 # ----------- Field Base Class -------------
+
 class Field:
     def __init__(self, value=None):
         self.value = value
@@ -12,18 +12,18 @@ class Field:
         return str(self.value)
 
 # ----------- Contact Fields ---------------
+
 class Name(Field):
     def __init__(self, value):
-        if not isinstance(value, str) or not value.strip():
+        if not value.strip():
             raise ValueError("Name cannot be empty.")
         super().__init__(value.strip())
 
 class Phone(Field):
     def __init__(self, value):
-        clean_value = ''.join(filter(str.isdigit, value))
-        if not is_valid_phone(clean_value):
-            raise ValueError("Phone number must be valid (10 digits).")
-        super().__init__(clean_value)
+        if not is_valid_phone(value):
+            raise ValueError("Invalid phone number format.")
+        super().__init__(value)
 
 class Email(Field):
     def __init__(self, value):
@@ -54,7 +54,6 @@ class Address(Field):
         super().__init__(value.strip())
 
 # ----------- Contact Record ----------------
-from datetime import datetime, date
 
 class Record:
     def __init__(self, name):
@@ -65,21 +64,30 @@ class Record:
         self.address = None
 
     def add_phone(self, phone):
+        for p in self.phones:
+            if p.value == phone:
+                raise ValueError(f"Phone {phone} already exists for this contact.")
+
         self.phones.append(Phone(phone))
 
     def edit_phone(self, old_phone, new_phone):
+        if old_phone == new_phone:
+            raise ValueError("New phone number must be different from the old one")
+
         for i, p in enumerate(self.phones):
             if p.value == old_phone:
                 self.phones[i] = Phone(new_phone)
                 return True
-        return False
+
+        raise ValueError(f"Phone {old_phone} not found in record")
 
     def remove_phone(self, phone):
         for p in self.phones:
             if p.value == phone:
                 self.phones.remove(p)
                 return True
-        return False
+
+        raise ValueError(f"Phone {phone} not found in record")
 
     def set_email(self, email):
         self.email = Email(email)
@@ -115,22 +123,24 @@ class Record:
         return (next_birthday - today).days
 
     def __str__(self):
-        phones = ", ".join(p.value for p in self.phones) if self.phones else "No phones"
-        return f"{self.name.value} | Phones: {phones}"
+        phones = ", ".join(str(p) for p in self.phones)
+        parts = [
+            f"Name: {self.name}",
+            f"Phones: {phones}" if phones else None,
+            f"Email: {self.email}" if self.email else None,
+            f"Birthday: {self.birthday}" if self.birthday else None,
+            f"Address: {self.address}" if self.address else None
+        ]
+        return " | ".join(p for p in parts if p)
 
 
 # ----------- AddressBook -------------------
-class AddressBook(UserDict):
-    def __init__(self, filename="address_book.pkl"):
-        super().__init__()
-        self.filename = filename
-        self.load()
 
+class AddressBook(UserDict):
     def add_record(self, record):
         if not isinstance(record, Record):
             raise TypeError("Only Record instances can be added.")
         self.data[record.name.value] = record
-        self.save()
 
     def get_record(self, name):
         return self.data.get(name)
@@ -144,14 +154,18 @@ class AddressBook(UserDict):
 
     def search(self, query):
         result = []
+        query_lower = query.lower()
+
         for record in self.data.values():
-            if (
-                query.lower() in record.name.value.lower()
-                or any(query in p.value for p in record.phones)
-                or any(query in e.value for e in record.emails)
-                or (record.address and query.lower() in record.address.value.lower())
-            ):
-                result.append(record)
+            if query_lower in record.name.value.lower():
+                results.append(record)
+            elif any(query_lower in p.value.lower() for p in record.phones):
+                results.append(record)
+            elif record.email and query_lower in record.email.value.lower():
+                results.append(record)
+            elif record.address and query_lower in record.address.value.lower():
+                results.append(record)
+
         return result
 
     def get_upcoming_birthdays(self, days=7):
@@ -165,22 +179,47 @@ class AddressBook(UserDict):
                 if 0 <= (bday - today).days <= days:
                     upcoming.append({
                         "name": record.name.value,
-                        "birthday": bday.strftime("%d.%m.%Y")
+                        "congratulation_date": bday.strftime("%d.%m.%Y")
                     })
         return upcoming
 
 # ----------- Note & NotesBook ---------------
+
 class Note:
     def __init__(self, text):
         if not text.strip():
             raise ValueError("Note cannot be empty.")
         self.text = text.strip()
 
+    def edit(self, new_text):
+        if not new_text.strip():
+            raise ValueError("Note text cannot be empty")
+        self.text = new_text
+
     def __str__(self):
         return self.text
 
-class NotesBook(UserDict):
-    def __init__(self, filename="notes_book.pkl"):
-        super().__init__()
-        self.filename = filename
-        self.load()
+class NoteBook(UserDict):
+    def add_note(self, key, note: Note):
+        self.data[key] = note
+
+    def delete_note(self, key):
+        if key in self.data:
+            del self.data[key]
+        else:
+            raise ValueError(f"Note '{key}' not found.")
+
+    def edit_note(self, key, new_text):
+        if key in self.data:
+            self.data[key].edit(new_text)
+            # print(f"Note '{key}' updated.")
+        else:
+            raise ValueError(f"Note '{key}' not found.")
+
+    def search_notes(self, query):
+        results = {}
+        query_lower = query.lower()
+        for key, note in self.data.items():
+            if query_lower in note.text.lower():
+                results[key] = note
+        return results
