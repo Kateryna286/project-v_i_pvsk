@@ -181,6 +181,17 @@ def show_notes(notebook):
     return "\n".join(output)
 
 
+@input_error
+def delete_contact(args, book):
+    name = args[0]
+    try:
+        book.remove_record(name)
+        return f"Contact '{name}' deleted."
+    except KeyError:
+        return "Contact not found."
+
+
+
 
 def show_help():
     return (
