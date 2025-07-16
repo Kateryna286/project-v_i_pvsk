@@ -151,20 +151,25 @@ class AddressBook(UserDict):
             self.save()
         else:
             raise KeyError(f"No record found for name: {name}")
+    
+    def save(self, filename="addressbook.pkl"):
+        with open(filename, "wb") as file:
+            pickle.dump(self, file)
 
     def search(self, query):
         result = []
         query_lower = query.lower()
 
+        # замінив results на result
         for record in self.data.values():
             if query_lower in record.name.value.lower():
-                results.append(record)
+                result.append(record)
             elif any(query_lower in p.value.lower() for p in record.phones):
-                results.append(record)
+                result.append(record)
             elif record.email and query_lower in record.email.value.lower():
-                results.append(record)
+                result.append(record)
             elif record.address and query_lower in record.address.value.lower():
-                results.append(record)
+                result.append(record)
 
         return result
 
