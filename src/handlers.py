@@ -1,31 +1,32 @@
 from utils import input_error, normalize_phone
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes
+from colorama import Fore, Style
 
 @input_error
 def show_all(book):
     if not book.values():
-        return "Address book is empty."
+        return "Your address book is currently empty."
     return format_contacts(book)
 
 @input_error
 def show_notes(notebook):
     if not notebook.data:
-        return "No notes found."
+        return "There are no notes available."
     return format_notes(notebook)
 
 @input_error
 def add_contact(args, book):
     if len(args) < 2:
-        raise ValueError("You must enter a name and phone number.")
+        raise ValueError("Please provide both a name and a phone number.")
     name, phone, *_ = args
     record = book.get_record(name)
-    message = "Contact updated."
+    message = "Contact updated successfully."
 
     if record is None:
         record = Record(name)
         book.add_record(record)
-        message = "Contact added."
+        message = "Contact added successfully."
     if phone:
         record.add_phone(phone)
     return message
@@ -33,19 +34,19 @@ def add_contact(args, book):
 @input_error
 def change_contact(args, book):
     if len(args) != 3:
-        raise ValueError("You need to enter three arguments: name, old number, new number.")
+        raise ValueError("Please enter exactly three arguments: name, old number, and new number.")
     
     name, old, new = args
     record = book.get_record(name)
     if not record:
-        return "Contact not found."
+        return "Contact was not found."
 
     normalized_old = normalize_phone(old)
     if normalized_old not in [normalize_phone(p.value) for p in record.phones]:
-        raise ValueError("Old phone number not found in contact.")
+        raise ValueError("The old phone number was not found in the contact.")
     
     record.edit_phone(old, new)
-    return "The phone number has been updated."
+    return "Phone number updated successfully."
 
 @input_error
 def show_phone(args, book):
@@ -54,25 +55,25 @@ def show_phone(args, book):
     if record:
         phones = ', '.join(p.value for p in record.phones)
         return f"Phone numbers for {name}: {phones}"
-    return "Contact not found."
+    return "Contact was not found."
 
 @input_error
 def add_birthday(args, book):
     name, date_str = args
     record = book.get_record(name)
     if not record:
-        return "Contact not found."
+        return "Contact was not found."
     record.set_birthday(date_str)
-    return "Birthday added."
+    return "Birthday added successfully."
 
 @input_error
 def show_birthday(args, book):
     name = args[0]
     record = book.get_record(name)
     if not record:
-        return "Contact not found."
+        return "Contact was not found."
     if not record.birthday:
-        return "Birthday not set."
+        return "Birthday is not set."
     birthday_str = record.birthday.value.strftime("%d.%m.%Y")
     return f"{name}'s birthday: {birthday_str}"
 
@@ -80,8 +81,8 @@ def show_birthday(args, book):
 def birthdays(book, days=7):
     upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
-        return f"No upcoming birthdays in the next {days} day(s)."
-    result = f"Upcoming birthdays in the next {days} day(s):\n"
+        return f"There are no upcoming birthdays in the next {days} day(s)."
+    result = f"Upcoming birthdays within {days} day(s):\n"
     for user in upcoming:
         result += f"{user['name']} - {user['congratulation_date']}\n"
     return result.strip()
@@ -91,9 +92,9 @@ def add_email(args, book):
     name, email = args
     record = book.get_record(name)
     if not record:
-        return "Contact not found."
+        return "Contact was not found."
     record.add_email(email)
-    return "Email added."
+    return "Email added successfully."
 
 @input_error
 def add_address(args, book):
@@ -101,18 +102,18 @@ def add_address(args, book):
     address = " ".join(args[1:])
     record = book.get_record(name)
     if not record:
-        return "Contact not found."
+        return "Contact was not found."
     record.add_address(address)
-    return "Address added."
+    return "Address added successfully."
 
 @input_error
 def delete_contact(args, book):
     name = args[0]
     try:
         book.remove_record(name)
-        return f"Contact '{name}' deleted."
+        return f"Contact '{name}' was deleted."
     except KeyError:
-        return "Contact not found."
+        return "Contact was not found."
 
 @input_error
 def find_contact(args, book):
@@ -121,19 +122,18 @@ def find_contact(args, book):
                if keyword in record.name.lower() or
                any(keyword in p.value.lower() for p in record.phones)]
     if not matches:
-        return "No matching contacts found."
-    # Форматуємо знайдені контакти в таблицю
+        return "No contacts matched your search."
     return format_contacts({r.name: r for r in matches})
 
 @input_error
 def add_note(args, notebook):
     if len(args) < 2:
-        raise ValueError("You must provide a title and the note text.")
+        raise ValueError("Please provide a title and the note text.")
     title = args[0]
     text = " ".join(args[1:])
     note = Note(text)
     notebook.add_note(title, note)
-    return f"Note '{title}' added."
+    return f"Note '{title}' added successfully."
 
 @input_error
 def find_note(args, notebook):
@@ -143,7 +143,7 @@ def find_note(args, notebook):
     results = {title: note for title, note in notebook.data.items()
                if query in title.lower() or query in str(note).lower()}
     if not results:
-        return "No matching notes found."
+        return "No notes matched your search."
     output = ["Matching notes:"]
     for title, note in results.items():
         output.append(f"• {title}: {note}")
@@ -155,16 +155,16 @@ def delete_note(args, notebook):
         raise ValueError("Please provide the title of the note to delete.")
     title = " ".join(args)
     notebook.delete_note(title)
-    return f"Note '{title}' deleted."
+    return f"Note '{title}' deleted successfully."
 
 @input_error
 def edit_note(args, notebook):
     if len(args) < 2:
-        raise ValueError("You must provide the title and the new text.")
+        raise ValueError("Please provide the title and the new text.")
     title = args[0]
     new_text = " ".join(args[1:])
     notebook.edit_note(title, new_text)
-    return f"Note '{title}' updated."
+    return f"Note '{title}' updated successfully."
 
 def show_help():
     return (
@@ -186,4 +186,26 @@ def show_help():
         "hello - Greeting\n"
         "help - Show this help message\n"
         "exit / close - Exit the assistant\n"
+    )
+
+def greet():
+    return (
+        f"\n{Fore.CYAN}Hello! I am your assistant bot.{Style.RESET_ALL}\n"
+        f"{Fore.YELLOW}Here is what I can do for you:{Style.RESET_ALL}\n"
+        f"{Fore.GREEN}- add:{Style.RESET_ALL} add a new contact\n"
+        f"{Fore.GREEN}- change:{Style.RESET_ALL} change a contact's phone number\n"
+        f"{Fore.GREEN}- phone:{Style.RESET_ALL} show phone numbers of a contact\n"
+        f"{Fore.GREEN}- all:{Style.RESET_ALL} show all contacts\n"
+        f"{Fore.GREEN}- add-birthday:{Style.RESET_ALL} add a birthday to a contact\n"
+        f"{Fore.GREEN}- show-birthday:{Style.RESET_ALL} display a contact's birthday\n"
+        f"{Fore.GREEN}- birthdays:{Style.RESET_ALL} show upcoming birthdays\n"
+        f"{Fore.GREEN}- add-note:{Style.RESET_ALL} add a note\n"
+        f"{Fore.GREEN}- find-note:{Style.RESET_ALL} search for a note\n"
+        f"{Fore.GREEN}- edit-note:{Style.RESET_ALL} edit an existing note\n"
+        f"{Fore.GREEN}- delete-note:{Style.RESET_ALL} delete a note\n"
+        f"{Fore.GREEN}- del-contact:{Style.RESET_ALL} delete a contact\n"
+        f"{Fore.GREEN}- show-notes:{Style.RESET_ALL} show all notes\n"
+        f"{Fore.GREEN}- help:{Style.RESET_ALL} display the list of commands\n"
+        f"{Fore.GREEN}- exit / close:{Style.RESET_ALL} exit the program\n\n"
+        f"{Fore.MAGENTA}If you need help, just type 'help'.{Style.RESET_ALL}"
     )
