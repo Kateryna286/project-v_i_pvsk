@@ -44,9 +44,15 @@ def change_contact(args, book):
     normalized_old = normalize_phone(old)
     if normalized_old not in [normalize_phone(p.value) for p in record.phones]:
         raise ValueError("The old phone number was not found in the contact.")
-    
+
+    for contact_name, other_record in book.data.items():
+        if contact_name != name:  
+            if any(normalize_phone(p.value) == normalize_phone(new) for p in other_record.phones):
+                return f"Phone number {new} already exists for another contact."
+
     record.edit_phone(old, new)
     return "Phone number updated successfully."
+
 
 @input_error
 def show_phone(args, book):
