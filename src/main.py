@@ -1,7 +1,7 @@
 from handlers import (
     add_contact, change_contact, show_phone, show_all, add_birthday, show_birthday,
     birthdays, add_email, add_address, delete_contact, find_contact,
-    add_note, find_note, delete_note, edit_note, show_notes, show_help
+    add_note, find_note, delete_note, edit_note, show_notes, show_help, greet
 )
 from models import AddressBook, NoteBook
 from utils import parse_input
@@ -13,9 +13,9 @@ init(autoreset=True)
 def main():
     book = load_data()
     notebook = load_notebook()
-    print(Fore.GREEN + "Welcome to your assistant bot.")
-    print(Fore.YELLOW + 'Type "help" to view the list of available commands.\n')
-
+    
+    print(Fore.CYAN + greet())
+    
     try:
         while True:
             user_input = input(Fore.CYAN + ">>> " + Style.RESET_ALL)

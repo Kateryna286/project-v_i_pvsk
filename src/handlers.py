@@ -1,6 +1,7 @@
 from utils import input_error, normalize_phone
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes
+from colorama import Fore, Style
 
 @input_error
 def show_all(book):
@@ -185,4 +186,26 @@ def show_help():
         "hello - Greeting\n"
         "help - Show this help message\n"
         "exit / close - Exit the assistant\n"
+    )
+
+def greet():
+    return (
+        f"\n{Fore.CYAN}Hello! I am your assistant bot.{Style.RESET_ALL}\n"
+        f"{Fore.YELLOW}Here is what I can do for you:{Style.RESET_ALL}\n"
+        f"{Fore.GREEN}- add:{Style.RESET_ALL} add a new contact\n"
+        f"{Fore.GREEN}- change:{Style.RESET_ALL} change a contact's phone number\n"
+        f"{Fore.GREEN}- phone:{Style.RESET_ALL} show phone numbers of a contact\n"
+        f"{Fore.GREEN}- all:{Style.RESET_ALL} show all contacts\n"
+        f"{Fore.GREEN}- add-birthday:{Style.RESET_ALL} add a birthday to a contact\n"
+        f"{Fore.GREEN}- show-birthday:{Style.RESET_ALL} display a contact's birthday\n"
+        f"{Fore.GREEN}- birthdays:{Style.RESET_ALL} show upcoming birthdays\n"
+        f"{Fore.GREEN}- add-note:{Style.RESET_ALL} add a note\n"
+        f"{Fore.GREEN}- find-note:{Style.RESET_ALL} search for a note\n"
+        f"{Fore.GREEN}- edit-note:{Style.RESET_ALL} edit an existing note\n"
+        f"{Fore.GREEN}- delete-note:{Style.RESET_ALL} delete a note\n"
+        f"{Fore.GREEN}- del-contact:{Style.RESET_ALL} delete a contact\n"
+        f"{Fore.GREEN}- show-notes:{Style.RESET_ALL} show all notes\n"
+        f"{Fore.GREEN}- help:{Style.RESET_ALL} display the list of commands\n"
+        f"{Fore.GREEN}- exit / close:{Style.RESET_ALL} exit the program\n\n"
+        f"{Fore.MAGENTA}If you need help, just type 'help'.{Style.RESET_ALL}"
     )
