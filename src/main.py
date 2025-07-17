@@ -1,7 +1,22 @@
 from handlers import (
-    add_contact, change_contact, show_phone, show_all, add_birthday, show_birthday,
-    birthdays, add_email, add_address, delete_contact, find_contact,
-    add_note, find_note, delete_note, edit_note, show_notes, show_help, greet
+    add_contact,
+    change_contact,
+    show_phone,
+    show_all,
+    add_birthday,
+    show_birthday,
+    birthdays,
+    add_email,
+    add_address,
+    delete_contact,
+    find_contact,
+    add_note,
+    find_note,
+    delete_note,
+    edit_note,
+    show_notes,
+    show_help,
+    greet,
 )
 from models import AddressBook, NoteBook
 from utils import parse_input
@@ -10,12 +25,13 @@ from colorama import Fore, Style, init
 
 init(autoreset=True)
 
+
 def main():
     book = load_data()
     notebook = load_notebook()
-    
+
     print(Fore.CYAN + greet())
-    
+
     try:
         while True:
             user_input = input(Fore.CYAN + ">>> " + Style.RESET_ALL)
@@ -30,6 +46,12 @@ def main():
                 print(Fore.GREEN + add_birthday(args, book))
             elif command == "add-note":
                 print(Fore.GREEN + add_note(args, notebook))
+            elif command == "add-email":
+                print(Fore.GREEN + add_email(args, book))
+            elif command == "add-address":
+                print(Fore.GREEN + add_address(args, book))
+            elif command == "find":
+                print(Fore.YELLOW + find_contact(args, book))
             elif command == "all":
                 print(Fore.YELLOW + show_all(book))
             elif command == "birthdays":
@@ -55,7 +77,10 @@ def main():
             elif command == "help":
                 print(Fore.YELLOW + show_help())
             else:
-                print(Fore.RED + "Sorry, I did not recognize that command. Please try again.")
+                print(
+                    Fore.RED
+                    + "Sorry, I did not recognize that command. Please try again."
+                )
     except KeyboardInterrupt:
         print(Fore.RED + "\nSession interrupted. Saving your data and exiting...")
     finally:

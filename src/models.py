@@ -4,6 +4,7 @@ from utils import is_valid_phone, is_valid_email
 
 # ----------- Field Base Class -------------
 
+
 class Field:
     def __init__(self, value=None):
         self.value = value
@@ -11,7 +12,9 @@ class Field:
     def __str__(self):
         return str(self.value)
 
+
 # ----------- Contact Fields ---------------
+
 
 class Name(Field):
     def __init__(self, value):
@@ -19,11 +22,13 @@ class Name(Field):
             raise ValueError("Name cannot be empty.")
         super().__init__(value.strip())
 
+
 class Phone(Field):
     def __init__(self, value):
         if not is_valid_phone(value):
             raise ValueError("Invalid phone number format.")
         super().__init__(value)
+
 
 class Email(Field):
     def __init__(self, value):
@@ -31,6 +36,7 @@ class Email(Field):
         if not is_valid_email(email):
             raise ValueError("Invalid email format.")
         super().__init__(email)
+
 
 class Birthday(Field):
     def __init__(self, value):
@@ -47,13 +53,16 @@ class Birthday(Field):
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday_date)
 
+
 class Address(Field):
     def __init__(self, value):
         if not value.strip():
             raise ValueError("Address cannot be empty.")
         super().__init__(value.strip())
 
+
 # ----------- Contact Record ----------------
+
 
 class Record:
     def __init__(self, name):
@@ -129,12 +138,13 @@ class Record:
             f"Phones: {phones}" if phones else None,
             f"Email: {self.email}" if self.email else None,
             f"Birthday: {self.birthday}" if self.birthday else None,
-            f"Address: {self.address}" if self.address else None
+            f"Address: {self.address}" if self.address else None,
         ]
         return " | ".join(p for p in parts if p)
 
 
 # ----------- AddressBook -------------------
+
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -177,13 +187,17 @@ class AddressBook(UserDict):
                 if bday < today:
                     bday = bday.replace(year=today.year + 1)
                 if 0 <= (bday - today).days <= days:
-                    upcoming.append({
-                        "name": record.name.value,
-                        "congratulation_date": bday.strftime("%d.%m.%Y")
-                    })
+                    upcoming.append(
+                        {
+                            "name": record.name.value,
+                            "congratulation_date": bday.strftime("%d.%m.%Y"),
+                        }
+                    )
         return upcoming
 
+
 # ----------- Note & NotesBook ---------------
+
 
 class Note:
     def __init__(self, text):
@@ -198,6 +212,7 @@ class Note:
 
     def __str__(self):
         return self.text
+
 
 class NoteBook(UserDict):
     def add_note(self, key, note: Note):
