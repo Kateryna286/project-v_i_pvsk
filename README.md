@@ -17,18 +17,7 @@
 project-v_i_pvsk/
 │
 ├── main.py               # Точка входу
-├── models/
-│   ├── fields.py         # Класи Field, Phone, Email, Name тощо
-│   ├── record.py         # Клас Record для одного контакту
-│   ├── addressbook.py    # Клас AddressBook — менеджер контактів
-│   └── notes.py          # Класи Note та NotesBook
-│
-├── utils/
-│   ├── validators.py     # is_valid_phone, is_valid_email
-│   └── storage.py        # Збереження/зчитування даних
-│
-├── data/
-│   └── addressbook.json  # Файл збереження контактів
+├
 │
 └── README.md
 ```
