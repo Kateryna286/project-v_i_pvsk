@@ -46,6 +46,12 @@ def main():
                 print(Fore.GREEN + add_birthday(args, book))
             elif command == "add-note":
                 print(Fore.GREEN + add_note(args, notebook))
+            elif command == "add-email":
+                print(Fore.GREEN + add_email(args, book))
+            elif command == "add-address":
+                print(Fore.GREEN + add_address(args, book))
+            elif command == "find":
+                print(Fore.YELLOW + find_contact(args, book))
             elif command == "all":
                 print(Fore.YELLOW + show_all(book))
             elif command == "birthdays":
