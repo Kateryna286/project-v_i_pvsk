@@ -3,17 +3,20 @@ from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes
 from colorama import Fore, Style
 
+
 @input_error
 def show_all(book):
     if not book.values():
         return "Your address book is currently empty."
     return format_contacts(book)
 
+
 @input_error
 def show_notes(notebook):
     if not notebook.data:
         return "There are no notes available."
     return format_notes(notebook)
+
 
 @input_error
 def add_contact(args, book):
@@ -31,11 +34,14 @@ def add_contact(args, book):
         record.add_phone(phone)
     return message
 
+
 @input_error
 def change_contact(args, book):
     if len(args) != 3:
-        raise ValueError("Please enter exactly three arguments: name, old number, and new number.")
-    
+        raise ValueError(
+            "Please enter exactly three arguments: name, old number, and new number."
+        )
+
     name, old, new = args
     record = book.get_record(name)
     if not record:
@@ -46,8 +52,11 @@ def change_contact(args, book):
         raise ValueError("The old phone number was not found in the contact.")
 
     for contact_name, other_record in book.data.items():
-        if contact_name != name:  
-            if any(normalize_phone(p.value) == normalize_phone(new) for p in other_record.phones):
+        if contact_name != name:
+            if any(
+                normalize_phone(p.value) == normalize_phone(new)
+                for p in other_record.phones
+            ):
                 return f"Phone number {new} already exists for another contact."
 
     record.edit_phone(old, new)
@@ -59,9 +68,10 @@ def show_phone(args, book):
     name = args[0]
     record = book.get_record(name)
     if record:
-        phones = ', '.join(p.value for p in record.phones)
+        phones = ", ".join(p.value for p in record.phones)
         return f"Phone numbers for {name}: {phones}"
     return "Contact was not found."
+
 
 @input_error
 def add_birthday(args, book):
@@ -71,6 +81,7 @@ def add_birthday(args, book):
         return "Contact was not found."
     record.set_birthday(date_str)
     return "Birthday added successfully."
+
 
 @input_error
 def show_birthday(args, book):
@@ -83,6 +94,7 @@ def show_birthday(args, book):
     birthday_str = record.birthday.value.strftime("%d.%m.%Y")
     return f"{name}'s birthday: {birthday_str}"
 
+
 @input_error
 def birthdays(book, days=7):
     upcoming = book.get_upcoming_birthdays(days)
@@ -93,6 +105,7 @@ def birthdays(book, days=7):
         result += f"{user['name']} - {user['congratulation_date']}\n"
     return result.strip()
 
+
 @input_error
 def add_email(args, book):
     name, email = args
@@ -101,6 +114,7 @@ def add_email(args, book):
         return "Contact was not found."
     record.add_email(email)
     return "Email added successfully."
+
 
 @input_error
 def add_address(args, book):
@@ -112,6 +126,7 @@ def add_address(args, book):
     record.add_address(address)
     return "Address added successfully."
 
+
 @input_error
 def delete_contact(args, book):
     name = args[0]
@@ -121,15 +136,20 @@ def delete_contact(args, book):
     except KeyError:
         return "Contact was not found."
 
+
 @input_error
 def find_contact(args, book):
     keyword = args[0].lower()
-    matches = [record for record in book.values()
-               if keyword in record.name.lower() or
-               any(keyword in p.value.lower() for p in record.phones)]
+    matches = [
+        record
+        for record in book.values()
+        if keyword in record.name.lower()
+        or any(keyword in p.value.lower() for p in record.phones)
+    ]
     if not matches:
         return "No contacts matched your search."
     return format_contacts({r.name: r for r in matches})
+
 
 @input_error
 def add_note(args, notebook):
@@ -141,19 +161,24 @@ def add_note(args, notebook):
     notebook.add_note(title, note)
     return f"Note '{title}' added successfully."
 
+
 @input_error
 def find_note(args, notebook):
     if not args:
         raise ValueError("Please provide a search keyword.")
     query = " ".join(args).lower()
-    results = {title: note for title, note in notebook.data.items()
-               if query in title.lower() or query in str(note).lower()}
+    results = {
+        title: note
+        for title, note in notebook.data.items()
+        if query in title.lower() or query in str(note).lower()
+    }
     if not results:
         return "No notes matched your search."
     output = ["Matching notes:"]
     for title, note in results.items():
         output.append(f"• {title}: {note}")
     return "\n".join(output)
+
 
 @input_error
 def delete_note(args, notebook):
@@ -163,6 +188,7 @@ def delete_note(args, notebook):
     notebook.delete_note(title)
     return f"Note '{title}' deleted successfully."
 
+
 @input_error
 def edit_note(args, notebook):
     if len(args) < 2:
@@ -171,6 +197,7 @@ def edit_note(args, notebook):
     new_text = " ".join(args[1:])
     notebook.edit_note(title, new_text)
     return f"Note '{title}' updated successfully."
+
 
 def show_help():
     return (
@@ -193,6 +220,7 @@ def show_help():
         "help - Show this help message\n"
         "exit / close - Exit the assistant\n"
     )
+
 
 def greet():
     return (
