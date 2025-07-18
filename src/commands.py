@@ -1,4 +1,5 @@
 from colorama import Fore, Style
+import difflib
 from handlers import (
     add_contact_interactive,
     add_birthday_interactive,
@@ -20,12 +21,12 @@ from handlers import (
     show_notes,
 )
 
+
+# ===============================
+#           COMMANDS
+# ===============================
 COMMANDS = {
-    "all": {
-        "func": lambda args, book, notebook: show_all(book),
-        "desc": "Show all contacts",
-        "color": Fore.YELLOW,
-    },
+    # ----- Contacts -----
     "add": {
         "func": lambda args, book, notebook: add_contact_interactive(book),
         "desc": "Add a new contact or update an existing one",
@@ -36,9 +37,34 @@ COMMANDS = {
         "desc": "Add phone to contact",
         "color": Fore.GREEN,
     },
+    "add-email": {
+        "func": lambda args, book, notebook: add_email_interactive(book),
+        "desc": "Add email to contact",
+        "color": Fore.GREEN,
+    },
+    "add-birthday": {
+        "func": lambda args, book, notebook: add_birthday_interactive(book),
+        "desc": "Add birthday to contact",
+        "color": Fore.GREEN,
+    },
+    "add-address": {
+        "func": lambda args, book, notebook: add_address_interactive(book),
+        "desc": "Add address to contact",
+        "color": Fore.GREEN,
+    },
     "find": {
         "func": lambda args, book, notebook: find_contact_interactive(book),
         "desc": "Search contacts",
+        "color": Fore.YELLOW,
+    },
+    "phone": {
+        "func": lambda args, book, notebook: show_phone_interactive(book),
+        "desc": "Show phone numbers for contact",
+        "color": Fore.YELLOW,
+    },
+    "show-birthday": {
+        "func": lambda args, book, notebook: show_birthday_interactive(book),
+        "desc": "Show contact's birthday",
         "color": Fore.YELLOW,
     },
     "change": {
@@ -51,11 +77,17 @@ COMMANDS = {
         "desc": "Delete contact",
         "color": Fore.RED,
     },
+    "all": {
+        "func": lambda args, book, notebook: show_all(book),
+        "desc": "Show all contacts",
+        "color": Fore.YELLOW,
+    },
     "birthdays": {
         "func": lambda args, book, notebook: birthdays_interactive(book),
         "desc": "Show upcoming birthdays",
         "color": Fore.YELLOW,
     },
+    # ----- Notes -----
     "add-note": {
         "func": lambda args, book, notebook: add_note_interactive(notebook),
         "desc": "Add a note",
@@ -66,15 +98,15 @@ COMMANDS = {
         "desc": "Find a note",
         "color": Fore.YELLOW,
     },
-    "sort-note": {
-        "func": lambda args, book, notebook: sort_notes_by_tag_interactive(notebook),
-        "desc": "Sort a note by tag",
-        "color": Fore.YELLOW,
-    },
     "edit-note": {
         "func": lambda args, book, notebook: edit_note_interactive(notebook),
         "desc": "Edit a note",
         "color": Fore.GREEN,
+    },
+    "sort-note": {
+        "func": lambda args, book, notebook: sort_notes_by_tag_interactive(notebook),
+        "desc": "Sort notes by tag",
+        "color": Fore.YELLOW,
     },
     "del-note": {
         "func": lambda args, book, notebook: delete_note_interactive(notebook),
@@ -86,31 +118,7 @@ COMMANDS = {
         "desc": "Show all notes",
         "color": Fore.YELLOW,
     },
-    "add-birthday": {
-        "func": lambda args, book, notebook: add_birthday_interactive(book),
-        "desc": "Add birthday to contact",
-        "color": Fore.GREEN,
-    },
-    "add-email": {
-        "func": lambda args, book, notebook: add_email_interactive(book),
-        "desc": "Add email to contact",
-        "color": Fore.GREEN,
-    },
-    "add-address": {
-        "func": lambda args, book, notebook: add_address_interactive(book),
-        "desc": "Add address to contact",
-        "color": Fore.GREEN,
-    },
-    "phone": {
-        "func": lambda args, book, notebook: show_phone_interactive(book),
-        "desc": "Show phone numbers for contact",
-        "color": Fore.YELLOW,
-    },
-    "show-birthday": {
-        "func": lambda args, book, notebook: show_birthday_interactive(book),
-        "desc": "Show contact's birthday",
-        "color": Fore.YELLOW,
-    },
+    # ----- General -----
     "hello": {
         "func": lambda args, book, notebook: "Hello! How can I assist you today?",
         "desc": "Greeting",
@@ -142,3 +150,24 @@ def greet():
     result.append(f"\n{Fore.GREEN}- exit / close:{Style.RESET_ALL} exit the program")
     result.append(f"{Fore.MAGENTA}If you need help, just type 'help'.{Style.RESET_ALL}")
     return "\n".join(result)
+
+
+def suggest_command(user_input):
+    commands_list = list(COMMANDS.keys()) + ["exit", "close"]
+    matches = difflib.get_close_matches(user_input, commands_list, n=3, cutoff=0.4)
+
+    if matches:
+        suggestions = []
+        for cmd in matches:
+            if cmd in COMMANDS:
+                desc = COMMANDS[cmd]["desc"]
+                suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
+            else:
+                desc = "Exit the assistant"
+                suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
+
+        return f"{Fore.MAGENTA}Did you mean:{Style.RESET_ALL}\n" + "\n".join(
+            suggestions
+        )
+    else:
+        return f"{Fore.RED}Unknown command.{Style.RESET_ALL} Type 'help' to see all available commands."
