@@ -87,7 +87,6 @@ COMMANDS = {
         "desc": "Show upcoming birthdays",
         "color": Fore.YELLOW,
     },
-
     # ----- Notes -----
     "add-note": {
         "func": lambda args, book, notebook: add_note_interactive(notebook),
@@ -119,7 +118,6 @@ COMMANDS = {
         "desc": "Show all notes",
         "color": Fore.YELLOW,
     },
-
     # ----- General -----
     "hello": {
         "func": lambda args, book, notebook: "Hello! How can I assist you today?",
@@ -162,14 +160,14 @@ def suggest_command(user_input):
         suggestions = []
         for cmd in matches:
             if cmd in COMMANDS:
-                desc = COMMANDS[cmd]['desc']
+                desc = COMMANDS[cmd]["desc"]
                 suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
             else:
                 desc = "Exit the assistant"
                 suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
 
-        return f"{Fore.MAGENTA}Did you mean:{Style.RESET_ALL}\n" + "\n".join(suggestions)
+        return f"{Fore.MAGENTA}Did you mean:{Style.RESET_ALL}\n" + "\n".join(
+            suggestions
+        )
     else:
         return f"{Fore.RED}Unknown command.{Style.RESET_ALL} Type 'help' to see all available commands."
-
-
