@@ -1,4 +1,4 @@
-from commands import COMMANDS, show_help, greet
+from commands import COMMANDS, show_help, greet, suggest_command
 from models import AddressBook, NoteBook
 from utils import parse_input
 from storage import save_data, load_data, save_notebook, load_notebook
@@ -30,10 +30,7 @@ def main():
                 except Exception as e:
                     print(Fore.RED + str(e))
             else:
-                print(
-                    Fore.RED
-                    + "Sorry, I did not recognize that command. Please try again."
-                )
+                print(suggest_command(command))
 
     except KeyboardInterrupt:
         print(Fore.RED + "\nSession interrupted. Saving your data and exiting...")
