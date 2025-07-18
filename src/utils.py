@@ -1,7 +1,6 @@
 import re
 
-# PHONE_REGEX = r"^\+\d{1,3}\d{6,9}$"
-PHONE_REGEX = r"^\d{6,9}$"
+PHONE_REGEX = r"^\+\d{1,3}\d{6,9}$"
 EMAIL_REGEX = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
 

@@ -1,7 +1,6 @@
 from utils import input_error, normalize_phone
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
-from formatters import format_contacts, format_notes
-from colorama import Fore, Style
+from formatters import format_contacts, format_notes, format_notes_list
 
 
 @input_error
@@ -18,234 +17,378 @@ def show_notes(notebook):
     return format_notes(notebook)
 
 
-@input_error
-def add_contact(args, book):
-    if len(args) < 2:
-        raise ValueError("Please provide both a name and a phone number.")
-    name, phone, *_ = args
-    record = book.get_record(name)
-    message = "Contact updated successfully."
+def add_contact_interactive(book: AddressBook):
+    """
+    Interactively collects contact info and adds it to the address book.
+    """
+    name = input("Enter name: ").strip()
+    if not name:
+        raise ValueError("Name is required.")
 
-    if record is None:
-        record = Record(name)
-        book.add_record(record)
-        message = "Contact added successfully."
-    if phone:
-        record.add_phone(phone)
-    return message
-
-
-@input_error
-def change_contact(args, book):
-    if len(args) != 3:
+    if book.get_record(name):
         raise ValueError(
-            "Please enter exactly three arguments: name, old number, and new number."
+            f"A contact with the name '{name}' already exists. "
+            f"To modify it, use the 'change' command."
         )
 
-    name, old, new = args
+    record = Record(name)
+
+    # Add phones
+    while True:
+        phone = input("Enter a phone number (or press Enter to skip): ").strip()
+        if not phone:
+            break
+        try:
+            record.add_phone(phone)
+            print(f"Phone {phone} added.")
+            break
+        except ValueError as e:
+            print(f"{e} (expected format: +[country_code][number], e.g. +380931112233)")
+
+    # Add email
+    while True:
+        email = input("Enter email (press Enter to skip): ").strip()
+        if not email:
+            break
+        try:
+            record.set_email(email)
+            print(f"Email {email} added.")
+            break
+        except ValueError as e:
+            print(f"{e} (expected format: name@example.com)")
+
+    # Add address
+    address = input("Enter address (press Enter to skip): ").strip()
+    if address:
+        try:
+            record.set_address(address)
+            print(f"Address '{address}' added.")
+        except ValueError as e:
+            print(f"{e} (please enter a non-empty address)")
+
+    # Add birthday
+    while True:
+        birthday = input("Enter birthday (DD.MM.YYYY, press Enter to skip): ").strip()
+        if not birthday:
+            break
+        try:
+            record.set_birthday(birthday)
+            print(f"Birthday {birthday} added.")
+            break
+        except ValueError as e:
+            print(f"{e} (expected format: DD.MM.YYYY)")
+
+    # Add record to book
+    book.add_record(record)
+    return f"\nContact created:\n{record}"
+
+
+@input_error
+def change_contact_interactive(book: AddressBook):
+    name = input("Enter the name of the contact to change: ").strip()
+    record = book.get_record(name)
+    if not record:
+        return f"Contact '{name}' not found."
+
+    print(f"\nWhat would you like to change for {record.name.value}?")
+    options = ["phone", "email", "birthday", "address"]
+    print("Options:", ", ".join(options))
+
+    field = input("Field to change: ").strip().lower()
+
+    if field == "phone":
+        if not record.phones:
+            print("This contact has no phone numbers.")
+            answer = input("Do you want to add one? (y/n): ").lower()
+            if answer == "y":
+                while True:
+                    new_phone = input("Enter new phone number: ").strip()
+                    try:
+                        record.add_phone(new_phone)
+                        print("Phone number added.")
+                        break
+                    except ValueError as e:
+                        print(f"{e} Please try again.")
+            return
+
+        if len(record.phones) == 1:
+            old_phone = record.phones[0].value
+            print(f"Current phone: {old_phone}")
+            new_phone = input("Enter new phone number: ").strip()
+            record.edit_phone(old_phone, new_phone)
+            return "Phone updated."
+        else:
+            print("Phone numbers:")
+            for idx, p in enumerate(record.phones, 1):
+                print(f"{idx}. {p.value}")
+            try:
+                index = int(input("Enter the number of the phone to change: ").strip())
+                old_phone = record.phones[index - 1].value
+                new_phone = input("Enter new phone number: ").strip()
+                record.edit_phone(old_phone, new_phone)
+                return "Phone updated."
+            except (IndexError, ValueError):
+                return "Invalid selection."
+
+    elif field == "email":
+        old = record.email.value if record.email else "-"
+        print(f"Current email: {old}")
+        new_email = input("Enter new email: ").strip()
+        record.set_email(new_email)
+        return "Email updated."
+
+    elif field == "birthday":
+        old = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "-"
+        print(f"Current birthday: {old}")
+        new_birthday = input("Enter new birthday (DD.MM.YYYY): ").strip()
+        record.set_birthday(new_birthday)
+        return "Birthday updated."
+
+    elif field == "address":
+        old = record.address.value if record.address else "-"
+        print(f"Current address: {old}")
+        new_address = input("Enter new address: ").strip()
+        record.set_address(new_address)
+        return "Address updated."
+
+    else:
+        return "Invalid field. Please choose from phone, email, birthday, address."
+
+
+@input_error
+def show_phone_interactive(book):
+    name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
 
-    normalized_old = normalize_phone(old)
-    if normalized_old not in [normalize_phone(p.value) for p in record.phones]:
-        raise ValueError("The old phone number was not found in the contact.")
+    if not record.phones:
+        return f"No phone numbers found for {name}."
 
-    for contact_name, other_record in book.data.items():
-        if contact_name != name:
-            if any(
-                normalize_phone(p.value) == normalize_phone(new)
-                for p in other_record.phones
-            ):
-                return f"Phone number {new} already exists for another contact."
-
-    record.edit_phone(old, new)
-    return "Phone number updated successfully."
+    phones = ", ".join(p.value for p in record.phones)
+    return f"Phone numbers for {name}: {phones}"
 
 
 @input_error
-def show_phone(args, book):
-    name = args[0]
-    record = book.get_record(name)
-    if record:
-        phones = ", ".join(p.value for p in record.phones)
-        return f"Phone numbers for {name}: {phones}"
-    return "Contact was not found."
-
-
-@input_error
-def add_birthday(args, book):
-    name, date_str = args
+def add_birthday_interactive(book):
+    name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
-    record.set_birthday(date_str)
-    return "Birthday added successfully."
+
+    while True:
+        date_str = input("Enter birthday (DD.MM.YYYY): ").strip()
+        if not date_str:
+            return "Birthday is required."
+        try:
+            record.set_birthday(date_str)
+            return f"Birthday {date_str} added for {name}."
+        except ValueError as e:
+            print(f"{e}")
 
 
 @input_error
-def show_birthday(args, book):
-    name = args[0]
+def show_birthday_interactive(book):
+    name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
+
     if not record.birthday:
-        return "Birthday is not set."
+        return f"Birthday for {name} is not set."
+
     birthday_str = record.birthday.value.strftime("%d.%m.%Y")
     return f"{name}'s birthday: {birthday_str}"
 
 
 @input_error
-def birthdays(book, days=7):
+def birthdays_interactive(book):
+    try:
+        days_str = input(
+            "Enter number of days to look ahead for birthdays (default is 7): "
+        ).strip()
+        days = int(days_str) if days_str else 7
+        if days < 0:
+            raise ValueError("Number of days must be zero or positive.")
+    except ValueError:
+        return "Please enter a valid non-negative integer for days."
+
     upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
         return f"There are no upcoming birthdays in the next {days} day(s)."
+
     result = f"Upcoming birthdays within {days} day(s):\n"
     for user in upcoming:
-        result += f"{user['name']} - {user['congratulation_date']}\n"
+        result += f"• {user['name']} - {user['congratulation_date']}\n"
     return result.strip()
 
 
 @input_error
-def add_email(args, book):
-    name, email = args
+def add_phone_interactive(book):
+    name = input("Enter the contact name: ").strip()
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
-    record.add_email(email)
-    return "Email added successfully."
+
+    while True:
+        phone = input("Enter the new phone number (or press Enter to cancel): ").strip()
+        if not phone:
+            return "Phone number not provided."
+
+        try:
+            record.add_phone(phone)
+            return f"Phone number {phone} added to {name}."
+        except ValueError as e:
+            print(f"{e}")
 
 
 @input_error
-def add_address(args, book):
-    name = args[0]
-    address = " ".join(args[1:])
+def add_email_interactive(book):
+    name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
-    record.add_address(address)
-    return "Address added successfully."
+
+    while True:
+        email = input("Enter email address: ").strip()
+        if not email:
+            return "Email is required."
+        try:
+            record.set_email(email)
+            return f"Email {email} added to {name}."
+        except ValueError as e:
+            print(f"{e}")
 
 
 @input_error
-def delete_contact(args, book):
-    name = args[0]
-    try:
+def add_address_interactive(book):
+    name = input("Enter the name of the contact: ").strip()
+    record = book.get_record(name)
+    if not record:
+        return "Contact was not found."
+
+    while True:
+        address = input("Enter address: ").strip()
+        if not address:
+            print("Address cannot be empty.")
+            continue
+        try:
+            record.set_address(address)
+            return f"Address added to {name}."
+        except ValueError as e:
+            print(f"{e}")
+
+
+@input_error
+def delete_contact_interactive(book):
+    name = input("Enter the name of the contact to delete: ").strip()
+    record = book.get_record(name)
+    if not record:
+        return "Contact was not found."
+
+    print("\nHere is the contact info:")
+    print(record.get_info())
+
+    confirm = (
+        input(f"Are you sure you want to delete '{name}'? (y/n): ").strip().lower()
+    )
+    if confirm == "y":
         book.remove_record(name)
         return f"Contact '{name}' was deleted."
-    except KeyError:
-        return "Contact was not found."
+    else:
+        return "Deletion cancelled."
 
 
-@input_error
-def find_contact(args, book):
-    keyword = args[0].lower()
-    matches = [
-        record
-        for record in book.values()
-        if keyword in record.name.lower()
-        or any(keyword in p.value.lower() for p in record.phones)
-    ]
+def find_contact_interactive(book):
+    """
+    Інтерактивний пошук контактів у адресній книзі.
+    Користувач вводить ключове слово, і програма показує відповідні контакти.
+    """
+    query = (
+        input("Enter a keyword to search (name, phone, email, or address): ")
+        .strip()
+        .lower()
+    )
+    if not query:
+        return "Search query cannot be empty."
+
+    matches = []
+    for record in book.values():
+        if query in record.name.value.lower():
+            matches.append(record)
+        elif any(query in phone.value.lower() for phone in record.phones):
+            matches.append(record)
+        elif record.email and query in record.email.value.lower():
+            matches.append(record)
+        elif record.address and query in record.address.value.lower():
+            matches.append(record)
+
     if not matches:
         return "No contacts matched your search."
-    return format_contacts({r.name: r for r in matches})
+
+    # Повертаємо відформатовану таблицю результатів
+    return format_contacts({r.name.value: r for r in matches})
 
 
 @input_error
-def add_note(args, notebook):
-    if len(args) < 2:
-        raise ValueError("Please provide a title and the note text.")
-    title = args[0]
-    text = " ".join(args[1:])
-    note = Note(text)
-    notebook.add_note(title, note)
-    return f"Note '{title}' added successfully."
+def add_note_interactive(notebook):
+    text = input("Enter the note text: ").strip()
+    if not text:
+        return "Note text cannot be empty."
+
+    tags_input = input("Enter tags (comma-separated, or press Enter to skip): ").strip()
+    tags = (
+        [tag.strip() for tag in tags_input.split(",") if tag.strip()]
+        if tags_input
+        else []
+    )
+
+    note_id = notebook._generate_id()
+    note = Note(text, tags)
+    notebook.add_note(note_id, note)
+    return f"Note '{note_id}' added successfully."
 
 
 @input_error
-def find_note(args, notebook):
-    if not args:
-        raise ValueError("Please provide a search keyword.")
-    query = " ".join(args).lower()
-    results = {
-        title: note
-        for title, note in notebook.data.items()
-        if query in title.lower() or query in str(note).lower()
-    }
+def find_note_interactive(notebook):
+    query = input("Enter a search keyword (text or tag): ").strip()
+    results = notebook.search_notes(query)
     if not results:
         return "No notes matched your search."
-    output = ["Matching notes:"]
-    for title, note in results.items():
-        output.append(f"• {title}: {note}")
-    return "\n".join(output)
+
+    return format_notes_list(list(results.items()))
 
 
 @input_error
-def delete_note(args, notebook):
-    if not args:
-        raise ValueError("Please provide the title of the note to delete.")
-    title = " ".join(args)
-    notebook.delete_note(title)
-    return f"Note '{title}' deleted successfully."
+def sort_notes_by_tag_interactive(notebook):
+    tag = input("Enter a tag to sort notes by: ").strip()
+    sorted_notes = notebook.sort_notes_by_tag(tag)
+    if not sorted_notes:
+        return "No notes to show."
+
+    return format_notes_list(sorted_notes)
 
 
 @input_error
-def edit_note(args, notebook):
-    if len(args) < 2:
-        raise ValueError("Please provide the title and the new text.")
-    title = args[0]
-    new_text = " ".join(args[1:])
-    notebook.edit_note(title, new_text)
-    return f"Note '{title}' updated successfully."
+def edit_note_interactive(notebook):
+    key = input("Enter the note id of the note to edit: ").strip()
+    if key not in notebook.data:
+        return f"Note '{key}' not found."
+
+    new_text = input(
+        "Enter new text (Press 'Enter' for skip and keep current): "
+    ).strip()
+    tags_input = input(
+        "Enter new tags (comma-separated, Press 'Enter' for skip and keep current): "
+    ).strip()
+    new_tags = [t.strip() for t in tags_input.split(",")] if tags_input else None
+
+    notebook.edit_note(key, new_text or None, new_tags)
+    return f"Note '{key}' updated successfully."
 
 
-def show_help():
-    return (
-        "\nAvailable commands:\n"
-        "add - Add a new contact\n"
-        "add-birthday - Add birthday to contact\n"
-        "add-note - Add a note\n"
-        "add-email - Add email to contact\n"
-        "add-address - Add address to contact\n"
-        "find - Search contacts\n"
-        "all - Show all contacts\n"
-        "birthdays - Show upcoming birthdays\n"
-        "change - Change contact's phone number\n"
-        "phone - Show phone numbers for contact\n"
-        "show-birthday - Show contact's birthday\n"
-        "find-note - Find a note\n"
-        "del-note - Delete a note\n"
-        "del-contact - Delete contact\n"
-        "edit-note - Edit a note\n"
-        "show-notes - Show all notes\n"
-        "hello - Greeting\n"
-        "help - Show this help message\n"
-        "exit / close - Exit the assistant\n"
-    )
-
-def greet():
-    return (
-        f"\n{Fore.CYAN}Hello! I am your assistant bot.{Style.RESET_ALL}\n"
-        f"{Fore.YELLOW}Here is what I can do for you:{Style.RESET_ALL}\n"
-        f"{Fore.GREEN}- add:{Style.RESET_ALL} add a new contact\n"
-        f"{Fore.GREEN}- add-birthday:{Style.RESET_ALL} add a birthday to a contact\n"
-        f"{Fore.GREEN}- add-note:{Style.RESET_ALL} add a note\n"
-        f"{Fore.GREEN}- add-email:{Style.RESET_ALL} add an email to a contact\n"
-        f"{Fore.GREEN}- add-address:{Style.RESET_ALL} add an address to a contact\n"
-        f"{Fore.GREEN}- find:{Style.RESET_ALL} search contacts\n"
-        f"{Fore.GREEN}- all:{Style.RESET_ALL} show all contacts\n"
-        f"{Fore.GREEN}- birthdays:{Style.RESET_ALL} show upcoming birthdays\n"
-        f"{Fore.GREEN}- change:{Style.RESET_ALL} change a contact's phone number\n"
-        f"{Fore.GREEN}- phone:{Style.RESET_ALL} show phone numbers of a contact\n"
-        f"{Fore.GREEN}- show-birthday:{Style.RESET_ALL} display a contact's birthday\n"
-        f"{Fore.GREEN}- find-note:{Style.RESET_ALL} search for a note\n"
-        f"{Fore.GREEN}- del-note:{Style.RESET_ALL} delete a note\n"
-        f"{Fore.GREEN}- del-contact:{Style.RESET_ALL} delete a contact\n"
-        f"{Fore.GREEN}- edit-note:{Style.RESET_ALL} edit an existing note\n"
-        f"{Fore.GREEN}- show-notes:{Style.RESET_ALL} show all notes\n"
-        f"{Fore.GREEN}- hello:{Style.RESET_ALL} greeting\n"
-        f"{Fore.GREEN}- help:{Style.RESET_ALL} display the list of commands\n"
-        f"{Fore.GREEN}- exit / close:{Style.RESET_ALL} exit the program\n\n"
-        f"{Fore.MAGENTA}If you need help, just type 'help'.{Style.RESET_ALL}"
-    )
-
+@input_error
+def delete_note_interactive(notebook):
+    key = input("Enter the ID of the note to delete: ").strip()
+    notebook.delete_note(key)
+    return f"Note '{key}' deleted successfully."
