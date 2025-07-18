@@ -150,14 +150,18 @@ class AddressBook(UserDict):
     def add_record(self, record):
         if not isinstance(record, Record):
             raise TypeError("Only Record instances can be added.")
-        self.data[record.name.value] = record
+        key = record.name.value.lower()
+        if key in self.data:
+            raise ValueError(f"Contact '{record.name.value}' already exists.")
+        self.data[key] = record
 
     def get_record(self, name):
-        return self.data.get(name)
+        return self.data.get(name.lower())
 
     def remove_record(self, name):
-        if name in self.data:
-            del self.data[name]
+        key = name.lower()  # ← нормалізований ключ
+        if key in self.data:
+            del self.data[key]
         else:
             raise KeyError(f"No record found for name: {name}")
 
@@ -200,21 +204,38 @@ class AddressBook(UserDict):
 
 
 class Note:
-    def __init__(self, text):
+    def __init__(self, text, tags=None):
         if not text.strip():
             raise ValueError("Note cannot be empty.")
         self.text = text.strip()
+        self.tags = tags or []
 
-    def edit(self, new_text):
-        if not new_text.strip():
-            raise ValueError("Note text cannot be empty")
-        self.text = new_text
+    def edit(self, new_text=None, new_tags=None):
+        if new_text is not None:
+            if not new_text.strip():
+                raise ValueError("Note text cannot be empty")
+            self.text = new_text.strip()
+        if new_tags is not None:
+            self.tags = new_tags
 
     def __str__(self):
-        return self.text
+        tag_str = f" [Tags: {', '.join(self.tags)}]" if self.tags else ""
+        return f"{self.text}{tag_str}"
 
 
 class NoteBook(UserDict):
+    def __init__(self):
+        super().__init__()
+        self.counter = 1
+
+    def _generate_id(self):
+        while True:
+            note_id = f"note-{self.counter}"
+            if note_id not in self.data:
+                self.counter += 1
+                return note_id
+            self.counter += 1
+
     def add_note(self, key, note: Note):
         self.data[key] = note
 
@@ -224,10 +245,9 @@ class NoteBook(UserDict):
         else:
             raise ValueError(f"Note '{key}' not found.")
 
-    def edit_note(self, key, new_text):
+    def edit_note(self, key, new_text=None, new_tags=None):
         if key in self.data:
-            self.data[key].edit(new_text)
-            # print(f"Note '{key}' updated.")
+            self.data[key].edit(new_text, new_tags)
         else:
             raise ValueError(f"Note '{key}' not found.")
 
@@ -235,6 +255,28 @@ class NoteBook(UserDict):
         results = {}
         query_lower = query.lower()
         for key, note in self.data.items():
-            if query_lower in note.text.lower():
+            if query_lower in note.text.lower() or any(
+                query_lower in tag.lower() for tag in note.tags
+            ):
                 results[key] = note
         return results
+
+    def sort_notes_by_tag(self, tag):
+        tag_lower = tag.lower()
+
+        tagged = []
+        untagged = []
+
+        for note_id, note in self.data.items():
+            tags_lower = [t.lower() for t in note.tags]
+            if tag_lower in tags_lower:
+                tagged.append((note_id, note))
+            else:
+                untagged.append((note_id, note))
+
+        return tagged + untagged
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        if "counter" not in self.__dict__:
+            self.counter = 1
