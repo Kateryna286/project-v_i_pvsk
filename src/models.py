@@ -53,6 +53,10 @@ class Birthday(Field):
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday_date)
 
+    def __str__(self):
+        return self.value.strftime("%d.%m.%Y")
+
+
 
 class Address(Field):
     def __init__(self, value):
