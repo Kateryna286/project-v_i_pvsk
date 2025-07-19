@@ -113,14 +113,20 @@ def change_contact_interactive(book: AddressBook):
                         break
                     except ValueError as e:
                         print(f"{e} Please try again.")
-            return
+            return "No phone number added."
 
         if len(record.phones) == 1:
             old_phone = record.phones[0].value
             print(f"Current phone: {old_phone}")
-            new_phone = input("Enter new phone number: ").strip()
-            record.edit_phone(old_phone, new_phone)
-            return "Phone updated."
+            while True:
+                print("Enter a new phone number in the format: +[country_code][number], e.g. +380931112233:")
+                new_phone = input("New phone number: ").strip()
+                try:
+                    record.edit_phone(old_phone, new_phone)
+                    return "Phone updated."
+                except ValueError as e:
+                    print(f"{e} Please try again.")
+            
         else:
             print("Phone numbers:")
             for idx, p in enumerate(record.phones, 1):
@@ -128,25 +134,37 @@ def change_contact_interactive(book: AddressBook):
             try:
                 index = int(input("Enter the number of the phone to change: ").strip())
                 old_phone = record.phones[index - 1].value
-                new_phone = input("Enter new phone number: ").strip()
-                record.edit_phone(old_phone, new_phone)
-                return "Phone updated."
+                print("Enter new phone number (expected format: +[country_code][number], e.g. +380931112233):")
+                new_phone = input("New phone number: ").strip()
+                try:
+                    record.edit_phone(old_phone, new_phone)
+                    return "Phone updated."
+                except ValueError as e:
+                    return f"{e}"
             except (IndexError, ValueError):
                 return "Invalid selection."
 
     elif field == "email":
         old = record.email.value if record.email else "-"
         print(f"Current email: {old}")
-        new_email = input("Enter new email: ").strip()
-        record.set_email(new_email)
-        return "Email updated."
+        while True:
+            new_email = input("Enter new email: ").strip()
+            try:
+                record.set_email(new_email)
+                return "Email updated."
+            except ValueError as e:
+                print(f"{e} (expected format: name@example.com)")
 
     elif field == "birthday":
         old = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "-"
         print(f"Current birthday: {old}")
-        new_birthday = input("Enter new birthday (DD.MM.YYYY): ").strip()
-        record.set_birthday(new_birthday)
-        return "Birthday updated."
+        while True:
+            new_birthday = input("Enter new birthday (DD.MM.YYYY): ").strip()
+            try:
+                record.set_birthday(new_birthday)
+                return "Birthday updated."
+            except ValueError as e:
+                print(f"{e}")
 
     elif field == "address":
         old = record.address.value if record.address else "-"
