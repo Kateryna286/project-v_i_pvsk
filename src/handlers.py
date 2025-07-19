@@ -329,17 +329,20 @@ def delete_contact_interactive(book):
 
     print("\nHere is the contact info:")
     print(record.get_info())
-
-    confirm = (
+    
+    while True:
+        confirm = (
         input(f"Are you sure you want to delete '{name}'? (y/n): ").strip().lower()
     )
-    if confirm == "y":
-        book.remove_record(record.name.value)
-        return f"Contact '{record.name.value}' was deleted."
-    else:
-        return "Deletion cancelled."
-
-
+        if confirm in ("y", "yes"):
+            book.remove_record(record.name.value)
+            return f"Contact '{record.name.value}' was deleted."
+        elif confirm in ("n", "no"):
+            return "Deletion cancelled."
+        else:
+            print("Invalid input. Please enter 'y' or 'no'.")
+            
+@input_error
 def find_contact_interactive(book):
     """
     Інтерактивний пошук контактів у адресній книзі.
