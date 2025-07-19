@@ -1,7 +1,7 @@
-from utils import input_error, normalize_phone
+from utils import input_error, normalize_phone, autosave 
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes, format_notes_list
-from storage import save_data
+
 
 
 
@@ -18,7 +18,8 @@ def show_notes(notebook):
         return "There are no notes available."
     return format_notes(notebook)
 
-
+@input_error
+@autosave
 def add_contact_interactive(book: AddressBook):
     """
     Interactively collects contact info and adds it to the address book.
@@ -86,6 +87,7 @@ def add_contact_interactive(book: AddressBook):
 
 
 @input_error
+@autosave
 def change_contact_interactive(book: AddressBook):
     name = input("Enter the name of the contact to change: ").strip()
     record = book.get_record(name)
@@ -186,6 +188,7 @@ def show_phone_interactive(book):
 
 
 @input_error
+@autosave
 def add_birthday_interactive(book):
     name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
@@ -240,6 +243,7 @@ def birthdays_interactive(book):
 
 
 @input_error
+@autosave
 def add_phone_interactive(book):
     name = input("Enter the contact name: ").strip()
     record = book.get_record(name)
@@ -259,6 +263,7 @@ def add_phone_interactive(book):
 
 
 @input_error
+@autosave
 def add_email_interactive(book):
     name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
@@ -277,6 +282,7 @@ def add_email_interactive(book):
 
 
 @input_error
+@autosave
 def add_address_interactive(book):
     name = input("Enter the name of the contact: ").strip()
     record = book.get_record(name)
@@ -296,6 +302,7 @@ def add_address_interactive(book):
 
 
 @input_error
+@autosave
 def delete_contact_interactive(book):
     name = input("Enter the name of the contact to delete: ").strip()
     record = book.get_record(name)
@@ -310,7 +317,6 @@ def delete_contact_interactive(book):
     )
     if confirm == "y":
         book.remove_record(record.name.value)
-        save_data(book)
         return f"Contact '{record.name.value}' was deleted."
     else:
         return "Deletion cancelled."
@@ -348,6 +354,7 @@ def find_contact_interactive(book):
 
 
 @input_error
+@autosave
 def add_note_interactive(notebook):
     text = input("Enter the note text: ").strip()
     if not text:
@@ -387,6 +394,7 @@ def sort_notes_by_tag_interactive(notebook):
 
 
 @input_error
+@autosave
 def edit_note_interactive(notebook):
     key = input("Enter the note id of the note to edit: ").strip()
     if key not in notebook.data:
@@ -405,6 +413,7 @@ def edit_note_interactive(notebook):
 
 
 @input_error
+@autosave
 def delete_note_interactive(notebook):
     key = input("Enter the ID of the note to delete: ").strip()
     notebook.delete_note(key)

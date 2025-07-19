@@ -1,7 +1,7 @@
 from commands import COMMANDS, show_help, greet, suggest_command
 from models import AddressBook, NoteBook
 from utils import parse_input
-from storage import save_data, load_data, save_notebook, load_notebook
+from storage import save_data, load_data, load_notebook
 from colorama import Fore, Style, init
 
 init(autoreset=True)
@@ -36,7 +36,7 @@ def main():
         print(Fore.RED + "\nSession interrupted. Saving your data and exiting...")
     finally:
         save_data(book)
-        save_notebook(notebook)
+        save_data(notebook)
 
 
 if __name__ == "__main__":
