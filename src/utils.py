@@ -1,13 +1,8 @@
 from validators import normalize_phone
 
 def parse_input(user_input):
-    """Parses the user's input into a command and its arguments."""
-
-    parts = user_input.strip().lower().split()
-    if not parts:
-        return "", []
-    return parts[0], parts[1:]
-
+    """Parses only the command from user's input, ignoring arguments."""
+    return user_input.strip().lower(), []
 
 def input_error(func):
     def wrapper(*args, **kwargs):
