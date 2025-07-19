@@ -4,5 +4,5 @@ __pycache__/
 .venv
 .vscode/
 
-addressbook.pkl
-notebook.pkl
+# addressbook.pkl
+# notebook.pkl

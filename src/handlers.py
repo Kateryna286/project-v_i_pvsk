@@ -1,6 +1,8 @@
 from utils import input_error, normalize_phone
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes, format_notes_list
+from storage import save_data
+
 
 
 @input_error
@@ -91,7 +93,7 @@ def change_contact_interactive(book: AddressBook):
         return f"Contact '{name}' not found."
 
     print(f"\nWhat would you like to change for {record.name.value}?")
-    options = ["phone", "email", "birthday", "address"]
+    options = ["name", "phone", "email", "birthday", "address"]
     print("Options:", ", ".join(options))
 
     field = input("Field to change: ").strip().lower()
@@ -150,9 +152,23 @@ def change_contact_interactive(book: AddressBook):
         new_address = input("Enter new address: ").strip()
         record.set_address(new_address)
         return "Address updated."
+    
+    elif field == "name":
+        old = record.name.value if record.name else "-"
+        print(f"Current name: {old}")
+        new_name = input("Enter new name: ").strip()
+
+        if book.get_record(new_name):
+            return f"A contact with the name '{new_name}' already exists."
+        
+
+        book.remove_record(old)
+        record.set_name(new_name)
+        book.add_record(record)
+        return "Name updated."
 
     else:
-        return "Invalid field. Please choose from phone, email, birthday, address."
+        return "Invalid field. Please choose from name, phone, email, birthday, address."
 
 
 @input_error
@@ -293,8 +309,9 @@ def delete_contact_interactive(book):
         input(f"Are you sure you want to delete '{name}'? (y/n): ").strip().lower()
     )
     if confirm == "y":
-        book.remove_record(name)
-        return f"Contact '{name}' was deleted."
+        book.remove_record(record.name.value)
+        save_data(book)
+        return f"Contact '{record.name.value}' was deleted."
     else:
         return "Deletion cancelled."
 
@@ -392,3 +409,8 @@ def delete_note_interactive(notebook):
     key = input("Enter the ID of the note to delete: ").strip()
     notebook.delete_note(key)
     return f"Note '{key}' deleted successfully."
+
+
+
+
+
