@@ -29,7 +29,7 @@ COMMANDS = {
     # ----- Contacts -----
     "add": {
         "func": lambda args, book, notebook: add_contact_interactive(book),
-        "desc": "Add a new contact or update an existing one",
+        "desc": "Add a new contact",
         "color": Fore.GREEN,
     },
     "add-phone": {
@@ -69,7 +69,7 @@ COMMANDS = {
     },
     "change": {
         "func": lambda args, book, notebook: change_contact_interactive(book),
-        "desc": "Change contact's phone number",
+        "desc": "Change contact's name, phone number, email, birthday, address",
         "color": Fore.GREEN,
     },
     "del": {
@@ -128,8 +128,10 @@ COMMANDS = {
         "func": lambda args, book, notebook: show_help(),
         "desc": "Show help message",
         "color": Fore.YELLOW,
-    },
+    }
 }
+
+
 
 
 def show_help():
@@ -171,3 +173,5 @@ def suggest_command(user_input):
         )
     else:
         return f"{Fore.RED}Unknown command.{Style.RESET_ALL} Type 'help' to see all available commands."
+    
+   
