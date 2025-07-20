@@ -53,6 +53,9 @@ class Birthday(Field):
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday_date)
 
+    def __str__(self):
+        return self.value.strftime("%d.%m.%Y")
+
 
 class Address(Field):
     def __init__(self, value):
@@ -71,7 +74,7 @@ class Record:
         self.birthday = None
         self.email = None
         self.address = None
-    
+
     def set_name(self, new_name: str):
         self.name = Name(new_name)
 
@@ -162,7 +165,7 @@ class AddressBook(UserDict):
         return self.data.get(name.lower())
 
     def remove_record(self, name):
-        key = name.lower()  # ← нормалізований ключ
+        key = name.lower()
         if key in self.data:
             del self.data[key]
         else:
@@ -172,7 +175,6 @@ class AddressBook(UserDict):
         result = []
         query_lower = query.lower()
 
-        # замінив results на result
         for record in self.data.values():
             if query_lower in record.name.value.lower():
                 result.append(record)
@@ -222,7 +224,7 @@ class Note:
             self.tags = new_tags
 
     def __str__(self):
-        tag_str = f" [Tags: {', '.join(self.tags)}]" if self.tags else ""
+        tag_str = f"[Tags: {', '.join(self.tags)}]" if self.tags else ""
         return f"{self.text}{tag_str}"
 
 

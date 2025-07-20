@@ -1,4 +1,4 @@
-from commands import COMMANDS, show_help, greet, suggest_command
+from commands import COMMANDS, show_help, greet, suggest_command, show_commands_table
 from models import AddressBook, NoteBook
 from utils import parse_input
 from storage import save_data, load_data, load_notebook
@@ -11,7 +11,8 @@ def main():
     book = load_data()
     notebook = load_notebook()
 
-    print(Fore.CYAN + greet())
+    print(greet())
+    show_commands_table()
 
     try:
         while True:
@@ -19,7 +20,7 @@ def main():
             command, args = parse_input(user_input)
 
             if command in ("exit", "close"):
-                print(Fore.GREEN + "Session ended. Goodbye!")
+                print(Fore.GREEN + "Session ended. Goodbye! 👋")
                 break
 
             action = COMMANDS.get(command)
