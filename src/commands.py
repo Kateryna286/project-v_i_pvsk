@@ -4,6 +4,7 @@ import difflib
 
 init(autoreset=True)
 
+
 # ===============================
 #         HELP FUNCTION
 # ===============================
@@ -14,15 +15,18 @@ def show_help():
     result.append("exit / close - 👋 Exit the assistant")
     return "\n".join(result)
 
+
 # ===============================
 #         GREETING FUNCTION
 # ===============================
 def greet():
-    return "\n".join([
-        f"{Fore.CYAN}🤖 Hello! I am your assistant bot.{Style.RESET_ALL}\n",
-        f"{Fore.YELLOW}✨ Here is what I can do for you below in the table!:{Style.RESET_ALL}\n",
-        f"{Fore.MAGENTA}❔ If you need help, just type 'help'.{Style.RESET_ALL}"
-    ])
+    return "\n".join(
+        [
+            f"{Fore.CYAN}🤖 Hello! I am your assistant bot.{Style.RESET_ALL}\n",
+            f"{Fore.YELLOW}✨ Here is what I can do for you below in the table!:{Style.RESET_ALL}\n",
+            f"{Fore.MAGENTA}❔ If you need help, just type 'help'.{Style.RESET_ALL}",
+        ]
+    )
 
 
 # ===============================
@@ -47,8 +51,7 @@ def suggest_command(user_input):
         )
     else:
         return f"{Fore.RED}❌ Unknown command.{Style.RESET_ALL} Type 'help' to see all available commands."
-    
-   
+
 
 # ===============================
 #         COMMAND HANDLERS
@@ -181,8 +184,9 @@ COMMANDS = {
         "func": lambda args, book, notebook: show_help(),
         "desc": "❔ Show help message",
         "color": Fore.YELLOW,
-    }
+    },
 }
+
 
 # ===============================
 #        TABLE GENERATOR
@@ -198,9 +202,6 @@ def show_commands_table():
     headers = ["Command", "Description", "Color"]
     print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
 
+
 if __name__ == "__main__":
     show_commands_table()
-
-
-
-

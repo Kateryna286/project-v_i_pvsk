@@ -10,9 +10,9 @@ init(autoreset=True)
 def main():
     book = load_data()
     notebook = load_notebook()
-    
+
     print(greet())
-    print(Fore.MAGENTA + "\n📋 Command Table:\n" + Style.RESET_ALL)
+    print(Fore.MAGENTA + "\nCommand Table:\n" + Style.RESET_ALL)
     show_commands_table()
 
     try:
@@ -21,7 +21,7 @@ def main():
             command, args = parse_input(user_input)
 
             if command in ("exit", "close"):
-                print(Fore.GREEN + "👋 Session ended. Goodbye! 👋")
+                print(Fore.GREEN + "Session ended. Goodbye! 👋")
                 break
 
             action = COMMANDS.get(command)
@@ -35,7 +35,7 @@ def main():
                 print(suggest_command(command))
 
     except KeyboardInterrupt:
-        print(Fore.RED + "\n⛔Session interrupted. Saving your data and exiting...")
+        print(Fore.RED + "\nSession interrupted. Saving your data and exiting...")
     finally:
         save_data(book)
         save_data(notebook)
