@@ -180,3 +180,14 @@ def suggest_command(user_input):
         f"{Fore.RED}Команду не знайдено.{Style.RESET_ALL} "
         f"Спробуйте 'help' для списку доступних команд."
     )
+
+def show_commands_table():
+    table_data = []
+    for command, info in COMMANDS.items():
+        desc = info["desc"]
+        color = info["color"]
+        colored_command = f"{color}{command}{Style.RESET_ALL}"
+        table_data.append([colored_command, desc])
+
+    headers = ["Command", "Description"]
+    print(tabulate(table_data, headers=headers, tablefmt="fancy_grid"))
