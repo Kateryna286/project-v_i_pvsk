@@ -1,4 +1,5 @@
-from colorama import Fore, Style
+from colorama import Fore, Style, init
+from tabulate import tabulate
 import difflib
 from handlers import (
     add_contact_interactive,
@@ -21,10 +22,8 @@ from handlers import (
     show_notes,
 )
 
+init(autoreset=True)
 
-# ===============================
-#           COMMANDS
-# ===============================
 COMMANDS = {
     # ----- Contacts -----
     "add": {
@@ -120,7 +119,7 @@ COMMANDS = {
     },
     # ----- General -----
     "hello": {
-        "func": lambda args, book, notebook: "Hello! How can I assist you today?",
+        "func": lambda args, book, notebook: "👋 Hello! How can I assist you today?",
         "desc": "Greeting",
         "color": Fore.CYAN,
     },
@@ -133,23 +132,20 @@ COMMANDS = {
 
 
 def show_help():
-    result = ["\nAvailable commands:"]
+    result = ["\n📘 Available commands:"]
     for cmd, data in COMMANDS.items():
         result.append(f"{cmd} - {data['desc']}")
-    result.append("exit / close - Exit the assistant")
+    result.append("exit / close - 👋 Exit the assistant")
     return "\n".join(result)
 
 
 def greet():
-    result = [
-        f"\n{Fore.CYAN}Hello! I am your assistant bot.{Style.RESET_ALL}",
-        f"{Fore.YELLOW}Here is what I can do for you:{Style.RESET_ALL}",
-    ]
-    for cmd, data in COMMANDS.items():
-        result.append(f"{data['color']}- {cmd}:{Style.RESET_ALL} {data['desc']}")
-    result.append(f"\n{Fore.GREEN}- exit / close:{Style.RESET_ALL} exit the program")
-    result.append(f"{Fore.MAGENTA}If you need help, just type 'help'.{Style.RESET_ALL}")
-    return "\n".join(result)
+    return "\n".join(
+        [
+            f"{Fore.CYAN}\nHello! I am your assistant bot.{Style.RESET_ALL}",
+            f"{Fore.YELLOW}Here is what I can do for you below in the table!:{Style.RESET_ALL}\n",
+        ]
+    )
 
 
 def suggest_command(user_input):
