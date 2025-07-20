@@ -71,7 +71,7 @@ class Record:
         self.birthday = None
         self.email = None
         self.address = None
-    
+
     def set_name(self, new_name: str):
         self.name = Name(new_name)
 

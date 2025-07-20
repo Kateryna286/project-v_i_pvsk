@@ -1,8 +1,6 @@
-from utils import input_error, normalize_phone, autosave 
+from utils import input_error, normalize_phone, autosave
 from models import AddressBook, Record, Birthday, Email, Address, NoteBook, Note
 from formatters import format_contacts, format_notes, format_notes_list
-
-
 
 
 @input_error
@@ -17,6 +15,7 @@ def show_notes(notebook):
     if not notebook.data:
         return "There are no notes available."
     return format_notes(notebook)
+
 
 @input_error
 @autosave
@@ -119,14 +118,16 @@ def change_contact_interactive(book: AddressBook):
             old_phone = record.phones[0].value
             print(f"Current phone: {old_phone}")
             while True:
-                print("Enter a new phone number in the format: +[country_code][number], e.g. +380931112233:")
+                print(
+                    "Enter a new phone number in the format: +[country_code][number], e.g. +380931112233:"
+                )
                 new_phone = input("New phone number: ").strip()
                 try:
                     record.edit_phone(old_phone, new_phone)
                     return "Phone updated."
                 except ValueError as e:
                     print(f"{e} Please try again.")
-            
+
         else:
             print("Phone numbers:")
             for idx, p in enumerate(record.phones, 1):
@@ -134,7 +135,9 @@ def change_contact_interactive(book: AddressBook):
             try:
                 index = int(input("Enter the number of the phone to change: ").strip())
                 old_phone = record.phones[index - 1].value
-                print("Enter new phone number (expected format: +[country_code][number], e.g. +380931112233):")
+                print(
+                    "Enter new phone number (expected format: +[country_code][number], e.g. +380931112233):"
+                )
                 new_phone = input("New phone number: ").strip()
                 try:
                     record.edit_phone(old_phone, new_phone)
@@ -172,7 +175,7 @@ def change_contact_interactive(book: AddressBook):
         new_address = input("Enter new address: ").strip()
         record.set_address(new_address)
         return "Address updated."
-    
+
     elif field == "name":
         old = record.name.value if record.name else "-"
         print(f"Current name: {old}")
@@ -180,7 +183,6 @@ def change_contact_interactive(book: AddressBook):
 
         if book.get_record(new_name):
             return f"A contact with the name '{new_name}' already exists."
-        
 
         book.remove_record(old)
         record.set_name(new_name)
@@ -188,7 +190,9 @@ def change_contact_interactive(book: AddressBook):
         return "Name updated."
 
     else:
-        return "Invalid field. Please choose from name, phone, email, birthday, address."
+        return (
+            "Invalid field. Please choose from name, phone, email, birthday, address."
+        )
 
 
 @input_error
@@ -436,8 +440,3 @@ def delete_note_interactive(notebook):
     key = input("Enter the ID of the note to delete: ").strip()
     notebook.delete_note(key)
     return f"Note '{key}' deleted successfully."
-
-
-
-
-
