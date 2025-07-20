@@ -24,7 +24,7 @@ def format_contacts(book):
         birthday = (
             record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "-"
         )
-        table.append([record.name.value, phones, email, address, birthday])
+        table.append([record.name.value.capitalize(), phones, email, address, birthday])
 
     return tabulate(table, headers=headers, tablefmt="fancy_grid")
 

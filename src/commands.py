@@ -181,6 +181,7 @@ def suggest_command(user_input):
         f"Спробуйте 'help' для списку доступних команд."
     )
 
+
 def show_commands_table():
     table_data = []
     for command, info in COMMANDS.items():

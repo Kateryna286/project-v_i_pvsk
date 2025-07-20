@@ -26,7 +26,9 @@ class Name(Field):
 class Phone(Field):
     def __init__(self, value):
         if not is_valid_phone(value):
-            raise ValueError("Invalid phone number format.")
+            raise ValueError(
+                "Invalid phone number. Use format: +XXXXXXXXX (8–12 digits), e.g. +380931112233"
+            )
         super().__init__(value)
 
 
@@ -44,11 +46,11 @@ class Birthday(Field):
             try:
                 birthday_date = datetime.strptime(value, "%d.%m.%Y").date()
             except ValueError:
-                raise ValueError("Birthday must be in format DD.MM.YYYY")
+                raise ValueError("Please enter the birthday in the format DD.MM.YYYY")
         elif isinstance(value, date):
             birthday_date = value
         else:
-            raise TypeError("Birthday must be a string or datetime.date")
+            raise TypeError("Birthday must be a string")
         if birthday_date > date.today():
             raise ValueError("Birthday cannot be in the future.")
         super().__init__(birthday_date)
