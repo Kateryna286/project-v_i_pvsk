@@ -5,5 +5,5 @@ venv/
 .venv/
 .vscode/
 
-addressbook.pkl
-notebook.pkl
+# addressbook.pkl
+# notebook.pkl

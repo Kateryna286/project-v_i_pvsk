@@ -20,16 +20,14 @@ def show_notes(notebook):
 @input_error
 @autosave
 def add_contact_interactive(book: AddressBook):
-    """
-    Interactively collects contact info and adds it to the address book.
-    """
+    """Interactively collects contact info and adds it to the address book."""
     name = input("Enter contact name: ").strip()
     if not name:
         raise ValueError("Name is required.")
 
     if book.get_record(name):
         raise ValueError(
-            f"A contact with the name '{name}' already exists. "
+            f"A contact with the name '{name.capitalize()}' already exists. "
             f"To modify it, use the 'change' command."
         )
 
@@ -45,7 +43,7 @@ def add_contact_interactive(book: AddressBook):
             print(f"Phone {phone} added.")
             break
         except ValueError as e:
-            print(f"{e} (expected format: +[country_code][number], e.g. +380931112233)")
+            print(f"{e}")
 
     # Add email
     while True:
@@ -78,7 +76,7 @@ def add_contact_interactive(book: AddressBook):
             print(f"Birthday {birthday} added.")
             break
         except ValueError as e:
-            print(f"{e} (expected format: DD.MM.YYYY)")
+            print(f"{e}")
 
     # Add record to book
     book.add_record(record)
@@ -112,41 +110,15 @@ def change_contact_interactive(book: AddressBook):
 
     if field == "phone":
         if not record.phones:
-            print("This contact has no phone numbers.")
-            while True:
-                answer = (
-                    input("Do you want to add one? (y/n or type 'esc' to cancel): ")
-                    .strip()
-                    .lower()
-                )
-
-                if answer == "esc":
-                    return "Phone number addition cancelled."
-                elif answer == "y":
-                    while True:
-                        new_phone = input(
-                            "📞 Enter new phone number or type 'esc' to cancel: "
-                        ).strip()
-                        if new_phone.lower() == "esc":
-                            return "Phone number addition cancelled."
-                        try:
-                            record.add_phone(new_phone)
-                            print("Phone number added.")
-                            return "Phone updated."
-                        except ValueError as e:
-                            print(f"{e} Please try again.")
-                elif answer == "n":
-                    return "No phone number added."
-                else:
-                    print("Invalid input. Please enter 'y', 'n', or 'esc'.")
+            return "No phone numbers found for this contact. Use the 'add-phone' command to add one"
 
         if len(record.phones) == 1:
             old_phone = record.phones[0].value
             print(f"Current phone: {old_phone}")
             while True:
-                print("Enter a new phone number or type 'esc' to cancel:")
-                print("Format: +[country_code][number], e.g. +380931112233")
-                new_phone = input("New phone number: ").strip()
+                new_phone = input(
+                    "Enter a new phone number (or 'esc' to cancel): "
+                ).strip()
 
                 if new_phone.lower() == "esc":
                     return "Phone number change cancelled."
@@ -161,30 +133,46 @@ def change_contact_interactive(book: AddressBook):
             print("Phone numbers:")
             for idx, p in enumerate(record.phones, 1):
                 print(f"{idx}. {p.value}")
+
             while True:
                 index_input = input(
                     "Enter the number of the phone to change (or 'esc' to cancel): "
                 ).strip()
+
                 if index_input.lower() == "esc":
                     return "Phone number change cancelled."
-                try:
-                    index = int(index_input)
-                    old_phone = record.phones[index - 1].value
+
+                if not index_input.isdigit():
+                    print("Please enter a valid number.")
+                    continue
+
+                index = int(index_input)
+                if index < 1 or index > len(record.phones):
+                    print(f"Please choose a number between 1 and {len(record.phones)}.")
+                    continue
+
+                old_phone = record.phones[index - 1].value
+                while True:
                     new_phone = input(
-                        "Enter new phone number or type 'exit' to cancel: "
+                        "Enter new phone number (or 'esc' to cancel): "
                     ).strip()
-                    if new_phone.lower() == "exit":
+                    if new_phone.lower() == "esc":
                         return "Phone number change cancelled."
-                    record.edit_phone(old_phone, new_phone)
-                    return "Phone updated."
-                except (IndexError, ValueError):
-                    print("Invalid selection. Please try again.")
+
+                    try:
+                        record.edit_phone(old_phone, new_phone)
+                        return "Phone updated."
+                    except ValueError as e:
+                        print(f"{e}")
 
     elif field == "email":
-        old = record.email.value if record.email else "-"
+        if not record.email:
+            return "No email found for this contact. Use the 'add-email' command to add one"
+
+        old = record.email.value
         print(f"Current email: {old}")
         while True:
-            new_email = input("Enter new email or type 'esc' to cancel: ").strip()
+            new_email = input("Enter new email (or 'esc' to cancel): ").strip()
 
             if new_email.lower() == "esc":
                 return "Email change cancelled."
@@ -196,12 +184,13 @@ def change_contact_interactive(book: AddressBook):
                 print(f"{e} (expected format: name@example.com)")
 
     elif field == "birthday":
-        old = record.birthday.value.strftime("%d.%m.%Y") if record.birthday else "-"
+        if not record.birthday:
+            return "No birthday found for this contact. Use the 'add-birthday' command to add one"
+
+        old = record.birthday.value.strftime("%d.%m.%Y")
         print(f"Current birthday: {old}")
         while True:
-            new_birthday = input(
-                "Enter new birthday (DD.MM.YYYY) or type 'esc' to cancel: "
-            ).strip()
+            new_birthday = input("Enter new birthday (or 'esc' to cancel): ").strip()
 
             if new_birthday.lower() == "esc":
                 return "Birthday change cancelled."
@@ -210,21 +199,23 @@ def change_contact_interactive(book: AddressBook):
                 record.set_birthday(new_birthday)
                 return "Birthday updated."
             except ValueError as e:
-                print(f"{e} (expected format: DD.MM.YYYY)")
+                print(f"{e}")
 
     elif field == "address":
-        old = record.address.value if record.address else "-"
+        if not record.address:
+            return "No address found for this contact. Use the 'add-address' command to add one"
+        old = record.address.value
         print(f"Current address: {old}")
-        new_address = input("Enter new address or type 'esc' to cancel: ").strip()
+        new_address = input("Enter new address (or 'esc' to cancel): ").strip()
         if new_address.lower() == "esc":
             return "Address change cancelled."
         record.set_address(new_address)
         return "Address updated."
 
     elif field == "name":
-        old = record.name.value if record.name else "-"
+        old = record.name.value
         print(f"Current name: {old}")
-        new_name = input("Enter new name or type 'esc' to cancel: ").strip()
+        new_name = input("Enter new name (or 'esc' to cancel): ").strip()
         if new_name.lower() == "esc":
             return "Name change cancelled."
 
@@ -250,10 +241,10 @@ def show_phone_interactive(book):
         return "Contact was not found."
 
     if not record.phones:
-        return f"No phone numbers found for {name}."
+        return f"No phone numbers found for {name.capitalize()}."
 
     phones = ", ".join(p.value for p in record.phones)
-    return f"Phone numbers for {name}: {phones}"
+    return f"Phone numbers for {name.capitalize()}: {phones}"
 
 
 @input_error
@@ -264,13 +255,16 @@ def add_birthday_interactive(book):
     if not record:
         return "Contact was not found."
 
+    if record.birthday:
+        return "This contact already has a bitrthday. To change it, use the 'change' command."
+
     while True:
         date_str = input("Enter birthday (DD.MM.YYYY): ").strip()
         if not date_str:
             return "Birthday is required."
         try:
             record.set_birthday(date_str)
-            return f"Birthday {date_str} added for {name}."
+            return f"Birthday {date_str} added for {name.capitalize()}."
         except ValueError as e:
             print(f"{e}")
 
@@ -286,7 +280,7 @@ def show_birthday_interactive(book):
         return f"Birthday for {name} is not set."
 
     birthday_str = record.birthday.value.strftime("%d.%m.%Y")
-    return f"{name}'s birthday: {birthday_str}"
+    return f"{name.capitalize()}'s birthday: {birthday_str}"
 
 
 @input_error
@@ -338,6 +332,11 @@ def add_email_interactive(book):
     if not record:
         return "Contact was not found."
 
+    if record.email:
+        return (
+            "This contact already has an email. To change it, use the 'change' command."
+        )
+
     while True:
         email = input("Enter email address: ").strip()
         if not email:
@@ -356,6 +355,9 @@ def add_address_interactive(book):
     record = book.get_record(name)
     if not record:
         return "Contact was not found."
+
+    if record.address:
+        return "This contact already has an address. To change it, use the 'change' command."
 
     while True:
         address = input("Enter address: ").strip()
@@ -382,7 +384,9 @@ def delete_contact_interactive(book):
 
     while True:
         confirm = (
-            input(f"Are you sure you want to delete '{name}'? (y/n): ").strip().lower()
+            input(f"Are you sure you want to delete '{name.capitalize()}'? (y/n): ")
+            .strip()
+            .lower()
         )
         if confirm in ("y", "yes"):
             book.remove_record(record.name.value)
@@ -396,8 +400,8 @@ def delete_contact_interactive(book):
 @input_error
 def find_contact_interactive(book):
     """
-    Інтерактивний пошук контактів у адресній книзі.
-    Користувач вводить ключове слово, і програма показує відповідні контакти.
+    Interactive contact search in the address book.
+    The user enters a keyword, and the program displays matching contacts.
     """
     query = (
         input("Enter a keyword to search (name, phone, email, or address): ")
@@ -421,7 +425,6 @@ def find_contact_interactive(book):
     if not matches:
         return "No contacts matched your search."
 
-    # Повертаємо відформатовану таблицю результатів
     return format_contacts({r.name.value: r for r in matches})
 
 
