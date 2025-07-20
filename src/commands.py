@@ -149,25 +149,37 @@ def greet():
 
 
 def suggest_command(user_input):
-    commands_list = list(COMMANDS.keys()) + ["exit", "close"]
-    matches = difflib.get_close_matches(user_input, commands_list, n=3, cutoff=0.4)
+    """
+    Пропонує найбільш схожі команди до введеного тексту
+    """
+    all_commands = list(COMMANDS.keys()) + ["exit", "close"]
+
+    prefix_matches = [cmd for cmd in all_commands if cmd.startswith(user_input)]
+
+    if prefix_matches:
+        result = [f"{Fore.MAGENTA}Можливо ви мали на увазі (префікс):{Style.RESET_ALL}"]
+        for cmd in prefix_matches:
+            desc = COMMANDS[cmd]["desc"] if cmd in COMMANDS else "Exit the assistant"
+            result.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
+        return "\n".join(result)
+
+    matches = difflib.get_close_matches(user_input, all_commands, n=3, cutoff=0.3)
 
     if matches:
-        suggestions = []
-        for cmd in matches:
-            if cmd in COMMANDS:
-                desc = COMMANDS[cmd]["desc"]
-                suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
-            else:
-                desc = "Exit the assistant"
-                suggestions.append(f"{Fore.GREEN}- {cmd}:{Style.RESET_ALL} {desc}")
+        result = [
+            f"{Fore.MAGENTA}Можливо ви мали на увазі (схожість):{Style.RESET_ALL}"
+        ]
+        for idx, cmd in enumerate(matches):
+            ratio = int(difflib.SequenceMatcher(None, user_input, cmd).ratio() * 100)
+            color = Fore.GREEN if idx == 0 else Fore.YELLOW
+            desc = COMMANDS[cmd]["desc"] if cmd in COMMANDS else "Exit the assistant"
+            result.append(f"{color}- {cmd} ({ratio}%):{Style.RESET_ALL} {desc}")
+        return "\n".join(result)
 
-        return f"{Fore.MAGENTA}Did you mean:{Style.RESET_ALL}\n" + "\n".join(
-            suggestions
-        )
-    else:
-        return f"{Fore.RED}Unknown command.{Style.RESET_ALL} Type 'help' to see all available commands."
-
+    return (
+        f"{Fore.RED}Команду не знайдено.{Style.RESET_ALL} "
+        f"Спробуйте 'help' для списку доступних команд."
+    )
 
 def show_commands_table():
     table_data = []

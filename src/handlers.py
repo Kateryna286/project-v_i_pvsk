@@ -327,7 +327,7 @@ def add_phone_interactive(book):
             record.add_phone(phone)
             return f"Phone number {phone} added to {name}."
         except ValueError as e:
-            print(f"❌ {e}")
+            print(f"{e}")
 
 
 @input_error
