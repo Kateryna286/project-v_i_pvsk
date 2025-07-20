@@ -9,9 +9,9 @@ def input_error(func):
         try:
             return func(*args, **kwargs)
         except KeyError:
-            return "Contact not found."
+            return "❌ Contact not found."
         except IndexError:
-            return "Enter user name."
+            return "⚠️ Enter user name."
         except ValueError as e:
             return str(e) if str(e) else "Give me name and phone please."
 

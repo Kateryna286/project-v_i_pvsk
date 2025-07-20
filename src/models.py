@@ -19,14 +19,14 @@ class Field:
 class Name(Field):
     def __init__(self, value):
         if not value.strip():
-            raise ValueError("Name cannot be empty.")
+            raise ValueError("⚠️ Name cannot be empty.")
         super().__init__(value.strip())
 
 
 class Phone(Field):
     def __init__(self, value):
         if not is_valid_phone(value):
-            raise ValueError("Invalid phone number format.")
+            raise ValueError("❌ Invalid phone number format.")
         super().__init__(value)
 
 
@@ -34,7 +34,7 @@ class Email(Field):
     def __init__(self, value):
         email = value.strip()
         if not is_valid_email(email):
-            raise ValueError("Invalid email format.")
+            raise ValueError("❌ Invalid email format.")
         super().__init__(email)
 
 
@@ -44,13 +44,13 @@ class Birthday(Field):
             try:
                 birthday_date = datetime.strptime(value, "%d.%m.%Y").date()
             except ValueError:
-                raise ValueError("Birthday must be in format DD.MM.YYYY")
+                raise ValueError("🎂 Birthday must be in format DD.MM.YYYY")
         elif isinstance(value, date):
             birthday_date = value
         else:
-            raise TypeError("Birthday must be a string or datetime.date")
+            raise TypeError("📆 Birthday must be a string or datetime.date")
         if birthday_date > date.today():
-            raise ValueError("Birthday cannot be in the future.")
+            raise ValueError("📆 Birthday cannot be in the future.")
         super().__init__(birthday_date)
 
     def __str__(self):
@@ -61,7 +61,7 @@ class Birthday(Field):
 class Address(Field):
     def __init__(self, value):
         if not value.strip():
-            raise ValueError("Address cannot be empty.")
+            raise ValueError("🏡 Address cannot be empty.")
         super().__init__(value.strip())
 
 
@@ -82,20 +82,20 @@ class Record:
     def add_phone(self, phone):
         for p in self.phones:
             if p.value == phone:
-                raise ValueError(f"Phone {phone} already exists for this contact.")
+                raise ValueError(f"⚠️ Phone {phone} already exists for this contact.")
 
         self.phones.append(Phone(phone))
 
     def edit_phone(self, old_phone, new_phone):
         if old_phone == new_phone:
-            raise ValueError("New phone number must be different from the old one")
+            raise ValueError("⚠️ New phone number must be different from the old one")
 
         for i, p in enumerate(self.phones):
             if p.value == old_phone:
                 self.phones[i] = Phone(new_phone)
                 return True
 
-        raise ValueError(f"Phone {old_phone} not found in record")
+        raise ValueError(f"❌ Phone {old_phone} not found in record")
 
     def remove_phone(self, phone):
         for p in self.phones:
@@ -103,7 +103,7 @@ class Record:
                 self.phones.remove(p)
                 return True
 
-        raise ValueError(f"Phone {phone} not found in record")
+        raise ValueError(f"❌ Phone {phone} not found in record")
 
     def set_email(self, email):
         self.email = Email(email)
@@ -118,15 +118,15 @@ class Record:
         self.address = Address(address)
 
     def get_info(self):
-        info = f"Name: {self.name.value}\n"
+        info = f"🧑 Name: {self.name.value}\n"
         if self.phones:
-            info += "Phones: " + ", ".join(str(p) for p in self.phones) + "\n"
+            info += "📞 Phones: " + ", ".join(str(p) for p in self.phones) + "\n"
         if self.email:
-            info += f"Email: {self.email.value}\n"
+            info += f"📧 Email: {self.email.value}\n"
         if self.address:
-            info += f"Address: {self.address.value}\n"
+            info += f"🏡 Address: {self.address.value}\n"
         if self.birthday:
-            info += f"Birthday: {self.birthday.value.strftime('%d.%m.%Y')}\n"
+            info += f"🎂 Birthday: {self.birthday.value.strftime('%d.%m.%Y')}\n"
         return info.strip()
 
     def days_to_birthday(self):
@@ -141,11 +141,11 @@ class Record:
     def __str__(self):
         phones = ", ".join(str(p) for p in self.phones)
         parts = [
-            f"Name: {self.name}",
-            f"Phones: {phones}" if phones else None,
-            f"Email: {self.email}" if self.email else None,
-            f"Birthday: {self.birthday}" if self.birthday else None,
-            f"Address: {self.address}" if self.address else None,
+            f"🧑 Name: {self.name}",
+            f"📞 Phones: {phones}" if phones else None,
+            f"📧 Email: {self.email}" if self.email else None,
+            f"🎂 Birthday: {self.birthday}" if self.birthday else None,
+            f"🏡 Address: {self.address}" if self.address else None,
         ]
         return " | ".join(p for p in parts if p)
 
@@ -156,10 +156,10 @@ class Record:
 class AddressBook(UserDict):
     def add_record(self, record):
         if not isinstance(record, Record):
-            raise TypeError("Only Record instances can be added.")
+            raise TypeError("⚠️ Only Record instances can be added.")
         key = record.name.value.lower()
         if key in self.data:
-            raise ValueError(f"Contact '{record.name.value}' already exists.")
+            raise ValueError(f"⚠️ Contact '{record.name.value}' already exists.")
         self.data[key] = record
 
     def get_record(self, name):
@@ -170,7 +170,7 @@ class AddressBook(UserDict):
         if key in self.data:
             del self.data[key]
         else:
-            raise KeyError(f"No record found for name: {name}")
+            raise KeyError(f"❌ No record found for name: {name}")
 
     def search(self, query):
         result = []
@@ -213,21 +213,21 @@ class AddressBook(UserDict):
 class Note:
     def __init__(self, text, tags=None):
         if not text.strip():
-            raise ValueError("Note cannot be empty.")
+            raise ValueError("⚠️ Note cannot be empty.")
         self.text = text.strip()
         self.tags = tags or []
 
     def edit(self, new_text=None, new_tags=None):
         if new_text is not None:
             if not new_text.strip():
-                raise ValueError("Note text cannot be empty")
+                raise ValueError("⚠️ Note text cannot be empty")
             self.text = new_text.strip()
         if new_tags is not None:
             self.tags = new_tags
 
     def __str__(self):
-        tag_str = f" [Tags: {', '.join(self.tags)}]" if self.tags else ""
-        return f"{self.text}{tag_str}"
+        tag_str = f"🏷️ [Tags: {', '.join(self.tags)}]" if self.tags else ""
+        return f"📝 {self.text}{tag_str}"
 
 
 class NoteBook(UserDict):
@@ -250,13 +250,13 @@ class NoteBook(UserDict):
         if key in self.data:
             del self.data[key]
         else:
-            raise ValueError(f"Note '{key}' not found.")
+            raise ValueError(f"❌ Note '{key}' not found.")
 
     def edit_note(self, key, new_text=None, new_tags=None):
         if key in self.data:
             self.data[key].edit(new_text, new_tags)
         else:
-            raise ValueError(f"Note '{key}' not found.")
+            raise ValueError(f"❌ Note '{key}' not found.")
 
     def search_notes(self, query):
         results = {}
