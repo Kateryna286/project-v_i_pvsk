@@ -12,7 +12,6 @@ def main():
     notebook = load_notebook()
 
     print(greet())
-    print(Fore.MAGENTA + "\nCommand Table:\n" + Style.RESET_ALL)
     show_commands_table()
 
     try:
